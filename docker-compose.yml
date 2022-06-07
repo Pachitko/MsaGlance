@@ -1,1 +1,22 @@
-version: "3.4"
+version: '3.4'
+
+volumes:
+  db:
+    name: "db"
+    external: false
+
+networks:
+  main_net:
+    driver: bridge
+
+services:
+  identity:
+    build: ./src/Services/Identity/Identity.Api
+    image: identity:1.0
+    container_name: identity
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - main_net
