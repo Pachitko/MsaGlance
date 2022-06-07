@@ -1,0 +1,13 @@
+.dockerignore
+.env
+.git
+.gitignore
+.vs
+.vscode
+.idea
+docker-compose*.yml
+*.md
+**/bin/
+**/obj/
+**/node_modules/
+**/wwwroot/lib/
