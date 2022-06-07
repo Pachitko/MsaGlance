@@ -10,6 +10,16 @@ networks:
     driver: bridge
 
 services:
+  disk:
+    build: ./Services/Disk/Disk.Api
+    image: disk:1.0
+    container_name: disk
+    ports:
+      - "8081:80"
+    depends_on:
+      - identity
+    networks:
+      - main_net
   identity:
     build: ./src/Services/Identity/Identity.Api
     image: identity:1.0

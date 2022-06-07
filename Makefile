@@ -6,6 +6,9 @@ DOCKER_DROP_DB = docker volume rm db
 
 DOTNET_PUBLISH = dotnet publish -c Release src/WebWorld.sln
 
+IDENTITY = ./src/Services/Identity/Identity.Api/Identity.Api.csproj
+DISK = ./src/Services/Disk/Disk.Api/Disk.Api.csproj
+
 pgadmin:
 	docker run --rm -d -p 8080:80 --name pgadmin -v pgadmin:/var/lib/pgadmin -e PGADMIN_DEFAULT_EMAIL="a@a.aa" -e PGADMIN_DEFAULT_PASSWORD="b" dpage/pgadmin4:6.9
 prune:
@@ -13,7 +16,8 @@ prune:
 dropdb:
 	$(DOCKER_DROP_DB)
 run:
-	dotnet run --project ./src/Services/Identity/Identity.Api/Identity.Api.csproj
+	gnome-terminal -- dotnet run --project ${IDENTITY}
+	gnome-terminal -- dotnet run --project ${DISK}
 publish_dotnet:
 	$(DOTNET_PUBLISH)
 publish_docker:
