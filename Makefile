@@ -8,7 +8,7 @@ DOCKER_COMPOSE_DOWN = docker compose down
 DOCKER_COMPOSE_LOGS = docker compose logs -f
 DOCKER_DROP_DB = docker volume rm db
 
-DOTNET_PUBLISH = dotnet publish -c Release src/WebWorld.sln
+DOTNET_PUBLISH = dotnet publish -c Release src/SoaGlance.sln
 
 IDENTITY_API = Identity.Api
 IDENTITY_PROJECT = ./src/Services/Identity/${IDENTITY_API}/${IDENTITY_API}.csproj
