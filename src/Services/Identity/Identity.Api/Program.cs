@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Identity.Api;
 using Serilog;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,10 @@ var app = builder.Build();
 
 app.UseIdentityServer();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () =>
+{
+    DateTime now = DateTime.UtcNow;
+    return $"Identity {now}";
+});
 
 await app.RunAsync();

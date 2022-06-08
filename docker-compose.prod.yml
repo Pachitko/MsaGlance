@@ -12,24 +12,24 @@ networks:
 services:
   disk:
     container_name: disk
-    image: disk:dev
+    image: pachitko/disk:1.0
     build:
       context: ${SERVICES}Disk/Disk.Api
-      target: debug
+      target: prod
     ports:
-      - "5001:5001"
+      - "5001:80"
     depends_on:
       - identity
     networks:
       - main_net
   identity:
     container_name: identity
-    image: identity:dev
+    image: pachitko/identity:1.0
     build:
       context: ${SERVICES}Identity/Identity.Api
-      target: debug
+      target: prod
     ports:
-      - "5000:5000"
+      - "5000:80"
     depends_on:
       - db
     networks:
