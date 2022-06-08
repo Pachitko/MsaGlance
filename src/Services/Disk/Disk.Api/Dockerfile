@@ -1,10 +1,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS debug
 
-RUN apt-get update
-RUN apt-get install -y unzip
-RUN curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l ~/vsdbg
+# RUN apt-get update
+# RUN apt-get install -y unzip
+# RUN curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l ~/vsdbg
 
-WORKDIR /debug
+WORKDIR /src
 
 COPY Disk.Api.csproj .
 RUN dotnet restore
