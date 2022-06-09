@@ -10,6 +10,18 @@ networks:
     driver: bridge
 
 services:
+  webapi:
+    container_name: webapi
+    image: webapi:dev
+    build:
+      context: ${SERVICES}Web/Web.Api
+      target: debug
+    ports:
+      - "5002:80"
+    networks:
+      - main_net
+    volumes:
+      - ${SERVICES}Web/Web.Api:/src
   disk:
     container_name: disk
     image: disk:dev
@@ -17,11 +29,13 @@ services:
       context: ${SERVICES}Disk/Disk.Api
       target: debug
     ports:
-      - "5001:5001"
+      - "5001:80"
     depends_on:
       - identity
     networks:
       - main_net
+    volumes:
+      - ${SERVICES}Disk/Disk.Api:/src
   identity:
     container_name: identity
     image: identity:dev
@@ -29,8 +43,10 @@ services:
       context: ${SERVICES}Identity/Identity.Api
       target: debug
     ports:
-      - "5000:5000"
+      - "5000:80"
     depends_on:
       - db
     networks:
       - main_net
+    volumes:
+      - ${SERVICES}Identity/Identity.Api:/src

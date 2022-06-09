@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "Disk.Api": {
+    "WebApi": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,
