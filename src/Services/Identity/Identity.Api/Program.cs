@@ -8,9 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddIdentityServer()
-    .AddInMemoryApiResources(Configuration.GetApiResources())
-    .AddInMemoryClients(Configuration.GetClients())
-    .AddInMemoryIdentityResources(Configuration.GetIdentityResources())
+    .AddInMemoryApiResources(Configuration.ApiResources)
+    .AddInMemoryClients(Configuration.Clients)
+    .AddInMemoryIdentityResources(Configuration.IdentityResources)
+    .AddInMemoryApiScopes(Configuration.IdentityApiScopes)
     .AddDeveloperSigningCredential();
 
 Log.Logger = new LoggerConfiguration()

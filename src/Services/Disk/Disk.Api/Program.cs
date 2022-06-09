@@ -1,21 +1,15 @@
 using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using IdentityModel.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
-builder.Services.AddHttpClient();
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
@@ -23,8 +17,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
     {
         c.RequireHttpsMetadata = builder.Environment.IsProduction();
-        c.Authority = "http://identity:5000";
-        c.Audience = "DiskAPI";
+        c.Authority = "http://identity";
+        // c.Audience = "DiskApi";
+        c.TokenValidationParameters = new()
+        {
+            ValidateAudience = false,
+        };
     });
 
 Log.Logger = new LoggerConfiguration()
@@ -43,26 +41,10 @@ app.MapGet("/", () =>
     return $"Disk {now}";
 });
 
-app.Map("/files", GetFilesAsync)
+app.Map("/secret", (HttpContext ctx) =>
+{
+    return "Disk secret";
+})
     .RequireAuthorization();
 
 app.Run();
-
-static async Task<IResult> GetFilesAsync(IHttpClientFactory httpClientFactory, ILogger<Program> logger)
-{
-    var authClient = httpClientFactory.CreateClient();
-    DiscoveryDocumentRequest discoveryDocumentRequest = new()
-    {
-        Address = "http://identity:5000",
-        Policy = new DiscoveryPolicy()
-        {
-            RequireHttps = false
-        }
-    };
-    var discoveryDocument = await authClient.GetDiscoveryDocumentAsync(discoveryDocumentRequest);
-
-    return Results.Ok(new
-    {
-        authorizeEndpoint = discoveryDocument.AuthorizeEndpoint
-    });
-}

@@ -7,34 +7,40 @@ namespace Identity.Api
 {
     internal static class Configuration
     {
-        internal static IEnumerable<Client> GetClients()
+        internal static IEnumerable<Client> Clients
             => new List<Client>
             {
                 new Client()
                 {
-                    ClientId = "Client_id",
+                    ClientId = "client_id",
                     ClientSecrets =
                     {
-                        new Secret("Secrets".ToSha256())
+                        new Secret("client_secret".ToSha256())
                     },
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     AllowedScopes =
                     {
-                        "DiskAPI"
+                        "DiskApi"
                     }
                 }
             };
 
-        internal static IEnumerable<IdentityResource> GetIdentityResources()
+        internal static IEnumerable<ApiScope> IdentityApiScopes
+            => new List<ApiScope>
+            {
+                new ApiScope("DiskApi", "Disk API")
+            };
+
+        internal static IEnumerable<IdentityResource> IdentityResources
             => new List<IdentityResource>
             {
                 new IdentityResources.OpenId()
             };
 
-        internal static IEnumerable<ApiResource> GetApiResources()
+        internal static IEnumerable<ApiResource> ApiResources
             => new List<ApiResource>
             {
-                new ApiResource("DiskAPI")
+                new ApiResource("DiskApi")
             };
     }
 }
