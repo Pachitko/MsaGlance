@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Identity.Api.Data;
 using System.Linq;
 using System;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Data
 {
@@ -14,15 +14,15 @@ namespace Infrastructure.Data
     {
         public static async Task SeedDataAsync(this IServiceProvider services)
         {
-            var context = services.GetRequiredService<AppDbContext>();
+            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+            loggerFactory.CreateLogger(nameof(DataSeeder)).LogInformation("Wait 3 seconds for the idsrv_db service");
+            await Task.Delay(3000);
+
+            var context = services.GetRequiredService<AuthDbContext>();
             var userManager = services.GetRequiredService<UserManager<AppUser>>();
             var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
 
-            IDbContextTransaction? transaction = null;
-
-            if (!context.Database.IsInMemory())
-                transaction = await context.Database.BeginTransactionAsync();
-
+            IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
             try
             {
                 if (!context.Roles.Any())

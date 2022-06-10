@@ -30,8 +30,12 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+string dbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+var migrationsAssembly = Assembly.GetExecutingAssembly().GetName().Name;
+
 builder.Services
-    .AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase("DB"))
+    .AddDbContext<AuthDbContext>(o => o.UseNpgsql(dbConnectionString, o => o.MigrationsAssembly(migrationsAssembly)))
     .AddIdentity<AppUser, AppRole>(c =>
     {
         c.User.RequireUniqueEmail = true;
@@ -43,7 +47,7 @@ builder.Services
         c.Password.RequireLowercase = false;
     })
     .AddDefaultTokenProviders()
-    .AddEntityFrameworkStores<AppDbContext>();
+    .AddEntityFrameworkStores<AuthDbContext>();
 
 var idsrvBuilder = builder.Services
     .AddIdentityServer(c =>
@@ -51,6 +55,10 @@ var idsrvBuilder = builder.Services
         c.IssuerUri = "http://idsrv";
     })
     .AddAspNetIdentity<AppUser>()
+    .AddOperationalStore(options => options.ConfigureDbContext =
+        builder => builder.UseNpgsql(dbConnectionString, o => o.MigrationsAssembly(migrationsAssembly)))
+    .AddConfigurationStore(options => options.ConfigureDbContext =
+        builder => builder.UseNpgsql(dbConnectionString, o => o.MigrationsAssembly(migrationsAssembly)))
     .AddInMemoryApiResources(Configuration.ApiResources)
     .AddInMemoryClients(Configuration.Clients)
     .AddInMemoryIdentityResources(Configuration.IdentityResources)

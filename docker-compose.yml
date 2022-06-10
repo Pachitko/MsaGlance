@@ -1,8 +1,8 @@
 version: '3.4'
 
 volumes:
-  db:
-    name: "db"
+  idsrv_db:
+    name: "idsrv_db"
     external: false
 
 networks:
@@ -10,6 +10,25 @@ networks:
     driver: bridge
 
 services:
+  idsrv_db:
+    image: postgres:14.3
+    container_name: idsrv_db
+    ports:
+      - "2345:5432"
+    volumes:
+      - idsrv_db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "idsrv"
+      POSTGRES_USER: "puser"
+      POSTGRES_PASSWORD: "12qwasZX"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U puser -d idsrv" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - main_net
   webapi:
     container_name: webapi
     image: webapi:dev

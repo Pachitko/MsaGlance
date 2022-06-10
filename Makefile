@@ -6,7 +6,7 @@ DOCKER_COMPOSE_UP_PROD = docker compose -f docker-compose.prod.yml up --build -d
 
 DOCKER_COMPOSE_DOWN = docker compose down
 DOCKER_COMPOSE_LOGS = docker compose logs -f
-DOCKER_DROP_DB = docker volume rm db
+DOCKER_DROP_DB = docker volume rm idsrv_db
 
 DOTNET_PUBLISH = dotnet publish -c Release src/SoaGlance.sln
 
