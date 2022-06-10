@@ -35,6 +35,8 @@ build-prod:
 
 up:
 	$(DOCKER_COMPOSE_UP)
+reup:
+	docker compose -f docker-compose.yml up -d --no-deps --build $(s)
 up-prod:
 	$(DOCKER_COMPOSE_UP_PROD)
 
@@ -42,7 +44,4 @@ down:
 	$(DOCKER_COMPOSE_DOWN)
 logs:
 	$(DOCKER_COMPOSE_LOGS) $(s)
-restart: 
-	$(DOCKER_COMPOSE_DOWN)
-# $(DOCKER_COMPOSE_BUILD)
-	$(DOCKER_COMPOSE_UP)
+restart: down up
