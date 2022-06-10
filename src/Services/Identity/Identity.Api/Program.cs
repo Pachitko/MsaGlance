@@ -17,13 +17,15 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using Identity.Api.Options;
+using Microsoft.Extensions.Configuration;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo
     .Console()
-    .MinimumLevel.Debug()
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -43,15 +45,34 @@ builder.Services
     .AddDefaultTokenProviders()
     .AddEntityFrameworkStores<AppDbContext>();
 
-builder.Services
-    .AddIdentityServer()
+var idsrvBuilder = builder.Services
+    .AddIdentityServer(c =>
+    {
+        c.IssuerUri = "http://identity";
+    })
     .AddAspNetIdentity<AppUser>()
     .AddInMemoryApiResources(Configuration.ApiResources)
     .AddInMemoryClients(Configuration.Clients)
     .AddInMemoryIdentityResources(Configuration.IdentityResources)
     .AddInMemoryApiScopes(Configuration.IdentityApiScopes)
     .AddDeveloperSigningCredential();
-// .AddSigningCredential(jwtKey, "RS256");
+
+SigningCredentialsOptions signingCredentialsOptions = builder.Configuration
+    .GetSection("SigningCredentials")
+    .Get<SigningCredentialsOptions>();
+
+switch (signingCredentialsOptions.Type)
+{
+    case "cert":
+        idsrvBuilder.AddSigningCredential(new System.Security.Cryptography.X509Certificates.X509Certificate2(signingCredentialsOptions.CertName, signingCredentialsOptions.CertPassword));
+        break;
+    case "default":
+        idsrvBuilder.AddDeveloperSigningCredential();
+        break;
+    default:
+        idsrvBuilder.AddDeveloperSigningCredential();
+        break;
+}
 
 builder.Services.AddFluentValidation(config =>
 {
