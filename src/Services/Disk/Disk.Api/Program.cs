@@ -9,7 +9,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo
+    .Console()
+    .CreateLogger();
+
 builder.Host.UseSerilog();
+
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
@@ -20,11 +26,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.Authority = builder.Configuration["ApiResourceBaseUrls:AuthServer"];
         options.ApiName = "DiskApi";
     });
-
-Log.Logger = new LoggerConfiguration()
-    .WriteTo
-    .Console()
-    .CreateLogger();
 
 var app = builder.Build();
 
@@ -37,7 +38,7 @@ app.MapGet("/", () =>
     return $"Disk {now}";
 });
 
-app.Map("/secret", (HttpContext ctx) =>
+app.MapGet("/secret", (HttpContext ctx) =>
 {
     return "Disk secret";
 })
