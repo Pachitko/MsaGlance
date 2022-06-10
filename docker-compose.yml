@@ -30,15 +30,13 @@ services:
       target: debug
     ports:
       - "5001:80"
-    depends_on:
-      - identity
     networks:
       - main_net
     volumes:
       - ${SERVICES}Disk/Disk.Api:/src
-  identity:
-    container_name: identity
-    image: identity:dev
+  idsrv:
+    container_name: idsrv
+    image: idsrv:dev
     build:
       context: ${SERVICES}Identity/Identity.Api
       target: debug

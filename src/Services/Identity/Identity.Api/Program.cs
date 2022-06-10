@@ -48,7 +48,7 @@ builder.Services
 var idsrvBuilder = builder.Services
     .AddIdentityServer(c =>
     {
-        c.IssuerUri = "http://identity";
+        c.IssuerUri = "http://idsrv";
     })
     .AddAspNetIdentity<AppUser>()
     .AddInMemoryApiResources(Configuration.ApiResources)

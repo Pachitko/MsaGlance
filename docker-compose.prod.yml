@@ -19,12 +19,12 @@ services:
     ports:
       - "5001:80"
     depends_on:
-      - identity
+      - idsrv
     networks:
       - main_net
-  identity:
-    container_name: identity
-    image: pachitko/identity:1.0
+  idsrv:
+    container_name: idsrv
+    image: pachitko/idsrv:1.0
     build:
       context: ${SERVICES}Identity/Identity.Api
       target: prod

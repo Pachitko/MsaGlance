@@ -40,7 +40,7 @@ static async Task<IResult> GetFilesAsync(IHttpClientFactory httpClientFactory, I
     var authClient = httpClientFactory.CreateClient();
     DiscoveryDocumentRequest discoveryDocumentRequest = new()
     {
-        Address = "http://identity",
+        Address = "http://idsrv",
         Policy = new DiscoveryPolicy()
         {
             RequireHttps = false
