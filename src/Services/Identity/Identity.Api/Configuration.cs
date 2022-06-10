@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -11,6 +11,24 @@ namespace Identity.Api
         internal static IEnumerable<Client> Clients
             => new List<Client>
             {
+                new Client
+                {
+                    ClientId = "SPA",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    RequireClientSecret = false,
+                    AllowedScopes =
+                    {
+                        "disk.api.read",
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Email,
+                        JwtClaimTypes.Role
+                    },
+                    RequireConsent = false,
+                    RequirePkce = true,
+                    AllowPlainTextPkce = false,
+                    AllowOfflineAccess = true, // refresh roken
+                },
                 new Client()
                 {
                     ClientId = "WebApiClientId",
@@ -43,21 +61,27 @@ namespace Identity.Api
             => new List<IdentityResource>
             {
                 new IdentityResources.Profile(),
-                new IdentityResources.OpenId()
+                new IdentityResources.OpenId(),
+                new IdentityResources.Email(),
+                new IdentityResource
+                    {
+                        Name = JwtClaimTypes.Role,
+                        UserClaims = new List<string> {JwtClaimTypes.Role}
+                    }
             };
 
-        // audience (a.k.a ApiName)
         internal static IEnumerable<ApiResource> ApiResources
             => new List<ApiResource>
             {
                 new ApiResource(){
-                    Name = "DiskApi",
+                    Name = "DiskApi", // audience (a.k.a ApiName)
                     DisplayName = "Disk API",
                     Scopes = {
                         "disk.api.read",
                         "disk.api.write",
                         "disk.api.full"
-                    }
+                    },
+                    // UserClaims = new List<string> {"role"}
                 }
             };
     }
