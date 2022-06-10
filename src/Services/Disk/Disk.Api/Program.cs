@@ -14,15 +14,11 @@ builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
+    .AddIdentityServerAuthentication(options =>
     {
-        c.RequireHttpsMetadata = builder.Environment.IsProduction();
-        c.Authority = "http://identity";
-        // c.Audience = "DiskApi";
-        c.TokenValidationParameters = new()
-        {
-            ValidateAudience = false,
-        };
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
+        options.Authority = builder.Configuration["ApiResourceBaseUrls:AuthServer"];
+        options.ApiName = "DiskApi";
     });
 
 Log.Logger = new LoggerConfiguration()
