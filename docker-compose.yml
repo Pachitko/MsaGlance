@@ -1,8 +1,12 @@
 version: '3.4'
 
 volumes:
+  disk_data_protection_keys:
+    name: disk_data_protection_keys
+  idsrv_data_protection_keys:
+    name: idsrv_data_protection_keys
   idsrv_db:
-    name: "idsrv_db"
+    name: idsrv_db
     external: false
 
 networks:
@@ -52,6 +56,7 @@ services:
     networks:
       - main_net
     volumes:
+      - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
       - ${SERVICES}Disk/Disk.Api:/src
   idsrv:
     container_name: idsrv
@@ -64,4 +69,5 @@ services:
     networks:
       - main_net
     volumes:
+      - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
       - ${SERVICES}Identity/Identity.Api:/src
