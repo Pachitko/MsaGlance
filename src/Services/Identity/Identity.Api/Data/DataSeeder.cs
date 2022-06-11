@@ -14,10 +14,6 @@ namespace Infrastructure.Data
     {
         public static async Task SeedDataAsync(this IServiceProvider services)
         {
-            var loggerFactory = services.GetRequiredService<ILoggerFactory>();
-            loggerFactory.CreateLogger(nameof(DataSeeder)).LogInformation("Wait 3 seconds for the idsrv_db service");
-            await Task.Delay(3000);
-
             var context = services.GetRequiredService<AuthDbContext>();
             var userManager = services.GetRequiredService<UserManager<AppUser>>();
             var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
