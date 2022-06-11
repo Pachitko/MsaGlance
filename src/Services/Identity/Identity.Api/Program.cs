@@ -8,18 +8,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Identity.Api.Models;
 using System.Reflection;
-using FluentValidation;
 using FluentValidation.AspNetCore;
-using FluentValidation.Results;
-using Identity.Api.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
 using Identity.Api.Options;
 using Microsoft.Extensions.Configuration;
-using System.Linq;
+using System.IO;
+using Microsoft.Net.Http.Headers;
+using IdentityServer4.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +51,7 @@ var idsrvBuilder = builder.Services
     .AddIdentityServer(c =>
     {
         c.IssuerUri = "http://idsrv";
+        c.UserInteraction.LoginUrl = "/auth/login";
     })
     .AddAspNetIdentity<AppUser>()
     .AddOperationalStore(options => options.ConfigureDbContext =
@@ -64,6 +63,11 @@ var idsrvBuilder = builder.Services
     .AddInMemoryIdentityResources(Configuration.IdentityResources)
     .AddInMemoryApiScopes(Configuration.IdentityApiScopes)
     .AddDeveloperSigningCredential();
+
+builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
 
 SigningCredentialsOptions signingCredentialsOptions = builder.Configuration
     .GetSection("SigningCredentials")
@@ -110,27 +114,40 @@ app.MapGet("/roles", async (RoleManager<AppRole> roleManager) =>
     return await roleManager.Roles.ToListAsync();
 });
 
-app.MapPost("/login", Login);
+app.MapGet("/auth/login", async () =>
+    Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),
+        MediaTypeHeaderValue.Parse(System.Net.Mime.MediaTypeNames.Text.Html)));
+
+app.MapPost("/auth/login", async (UserLoginDto loginDto, [FromQuery] string returnUrl,
+    IIdentityServerInteractionService interaction, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) =>
+{
+    var context = await interaction.GetAuthorizationContextAsync(returnUrl);
+
+    var user = await userManager.FindByNameAsync(loginDto.Username);
+    if (user is null)
+        return Results.NotFound("User not found");
+
+    var signInResult = await signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
+    if (signInResult.Succeeded)
+    {
+        if (context is not null)
+        {
+            return Results.Redirect(returnUrl);
+        }
+
+        if (string.IsNullOrEmpty(returnUrl))
+        {
+            return Results.LocalRedirect("~/");
+        }
+        else
+        {
+            // user might have clicked on a malicious link - should be logged
+            throw new Exception("invalid return URL");
+        }
+    }
+
+    return Results.BadRequest("Sign in error");
+
+}).RequireCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
 await app.RunAsync();
-
-static async Task<IResult> Login([FromBody] UserLoginDto userLogin, UserManager<AppUser> userManager,
-    SignInManager<AppUser> signInManager, IValidator<UserLoginDto> validator)
-{
-    ValidationResult validationResult = validator.Validate(userLogin);
-
-    if (validationResult.IsValid)
-    {
-        var user = await userManager.FindByNameAsync(userLogin.Username);
-        if (user is null)
-        {
-            return Results.NotFound("User not found");
-        }
-        // var signInResult = await signInManager.PasswordSignInAsync(userLogin.Username, userLogin.Password, false, false);
-        return Results.Ok(user);
-    }
-    else
-    {
-        return Results.ValidationProblem(validationResult.ToDictionary());
-    }
-}

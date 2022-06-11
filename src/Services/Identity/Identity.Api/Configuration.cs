@@ -14,6 +14,20 @@ namespace Identity.Api
                 new Client
                 {
                     ClientId = "SPA",
+                    AllowedGrantTypes = GrantTypes.Implicit,
+                    RequireClientSecret = false,
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        "disk.api.read"
+                    },
+                    AllowAccessTokensViaBrowser = true,
+                    // AllowedCorsOrigins = { "https://oauth.pstmn.io" },
+                    RedirectUris = { "https://oauth.pstmn.io/v1/callback", "http://localhost:5000/" },
+                },
+                new Client
+                {
+                    ClientId = "Passworded",
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     RequireClientSecret = false,
                     AllowedScopes =
@@ -24,10 +38,7 @@ namespace Identity.Api
                         IdentityServerConstants.StandardScopes.Email,
                         JwtClaimTypes.Role
                     },
-                    RequireConsent = false,
-                    RequirePkce = true,
-                    AllowPlainTextPkce = false,
-                    AllowOfflineAccess = true, // refresh roken
+                    AllowOfflineAccess = true,
                 },
                 new Client()
                 {
