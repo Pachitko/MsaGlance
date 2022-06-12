@@ -40,7 +40,19 @@
     </div>
     <script>
         const form = document.getElementById("loginForm");
-        form.setAttribute('action', form.getAttribute('action') + document.location.search)
+        const input = document.createElement("input");
+        input.setAttribute("name", "X-XSRF-REQUEST-TOKEN");
+        input.setAttribute("value", getCookie("X-XSRF-REQUEST-TOKEN"));
+        input.setAttribute("type", "hidden");
+        form.appendChild(input);
+        form.setAttribute("action", form.getAttribute("action") + document.location.search)
+
+        function getCookie(name) {
+            let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
     </script>
 </body>
 

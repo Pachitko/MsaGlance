@@ -21,6 +21,7 @@ using IdentityServer4.Services;
 using FluentValidation;
 using System.Threading.Tasks;
 using Identity.Api.Extensions;
+using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,9 +68,11 @@ var idsrvBuilder = builder.Services
     .AddInMemoryApiScopes(Configuration.IdentityApiScopes)
     .AddDeveloperSigningCredential();
 
-builder.Services.ConfigureApplicationCookie(options =>
+builder.Services.AddAntiforgery(options =>
     {
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.Name = "X-XSRF-COOKIE-TOKEN";
+        options.HeaderName = "X-XSRF-REQUEST-TOKEN";
+        options.FormFieldName = "X-XSRF-REQUEST-TOKEN";
     });
 
 SigningCredentialsOptions signingCredentialsOptions = builder.Configuration
@@ -98,6 +101,16 @@ builder.Services.AddFluentValidation(config =>
 var app = builder.Build();
 await app.Services.CreateScope().ServiceProvider.SeedDataAsync();
 
+app.Use(async (httpContext, next) =>
+{
+    if (httpContext.Request.Path.HasValue && httpContext.Request.Path.Value == "/auth/login" && httpContext.Request.Method == "POST")
+    {
+        IAntiforgery antiforgery = httpContext.RequestServices.GetRequiredService<IAntiforgery>();
+        await antiforgery.ValidateRequestAsync(httpContext);
+    }
+    await next();
+});
+
 app.UseCors(c => c.WithOrigins("http://webapi").AllowAnyHeader().AllowAnyMethod());
 
 app.UseIdentityServer();
@@ -114,9 +127,18 @@ app.MapGet("/roles", async (RoleManager<AppRole> roleManager) =>
     return await roleManager.Roles.ToListAsync();
 });
 
-app.MapGet("/auth/login", async () =>
-    Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),
-        MediaTypeHeaderValue.Parse(System.Net.Mime.MediaTypeNames.Text.Html)));
+app.MapGet("/auth/login", async (HttpContext httpContext, IAntiforgery antiforgery) =>
+{
+    var tokens = antiforgery.GetAndStoreTokens(httpContext);
+    if (tokens.RequestToken is not null)
+        httpContext.Response.Cookies.Append("X-XSRF-REQUEST-TOKEN", tokens.RequestToken, new CookieOptions
+        {
+            HttpOnly = false
+        });
+
+    return Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),
+        MediaTypeHeaderValue.Parse(System.Net.Mime.MediaTypeNames.Text.Html));
+});
 
 app.MapPost("/auth/login", Login);
 
@@ -140,15 +162,13 @@ static async Task<IResult> Login(UserLoginDto loginDto, [FromQuery] string retur
         {
             return Results.Redirect(returnUrl);
         }
-
-        if (string.IsNullOrEmpty(returnUrl))
+        else if (string.IsNullOrEmpty(returnUrl))
         {
             return Results.LocalRedirect("~/");
         }
         else
         {
-            // user might have clicked on a malicious link - should be logged
-            throw new Exception("invalid return URL");
+            return Results.BadRequest("Invalid return URL");
         }
     }
 
