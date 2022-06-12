@@ -25,11 +25,7 @@ Log.Logger = new LoggerConfiguration()
 
 var app = builder.Build();
 
-app.MapGet("/", () =>
-{
-    DateTime now = DateTime.UtcNow;
-    return $"Web {now}";
-});
+app.MapGet("/", () => $"WebApi {DateTime.UtcNow}");
 
 app.Map("/files", GetFilesAsync);
 

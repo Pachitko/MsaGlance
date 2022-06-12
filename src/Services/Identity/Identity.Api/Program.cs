@@ -102,11 +102,7 @@ app.UseCors(c => c.WithOrigins("http://webapi").AllowAnyHeader().AllowAnyMethod(
 
 app.UseIdentityServer();
 
-app.MapGet("/", () =>
-{
-    DateTime now = DateTime.UtcNow;
-    return $"Identity {now}";
-});
+app.MapGet("/", () => $"Identity {DateTime.UtcNow}");
 
 app.MapGet("/users", async (UserManager<AppUser> userManager) =>
 {
@@ -117,7 +113,6 @@ app.MapGet("/roles", async (RoleManager<AppRole> roleManager) =>
 {
     return await roleManager.Roles.ToListAsync();
 });
-
 
 app.MapGet("/auth/login", async () =>
     Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),

@@ -32,11 +32,7 @@ var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () =>
-{
-    DateTime now = DateTime.UtcNow;
-    return $"Disk {now}";
-});
+app.MapGet("/", () => $"Disk {DateTime.UtcNow}");
 
 app.MapGet("/secret", (HttpContext ctx) =>
 {
