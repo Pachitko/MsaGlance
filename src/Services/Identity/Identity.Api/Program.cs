@@ -95,7 +95,6 @@ builder.Services.AddFluentValidation(config =>
     config.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 });
 
-// Pipeline
 var app = builder.Build();
 await app.Services.CreateScope().ServiceProvider.SeedDataAsync();
 
@@ -119,14 +118,19 @@ app.MapGet("/roles", async (RoleManager<AppRole> roleManager) =>
     return await roleManager.Roles.ToListAsync();
 });
 
-app.MapPost("/auth/register", Register);
 
 app.MapGet("/auth/login", async () =>
     Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),
         MediaTypeHeaderValue.Parse(System.Net.Mime.MediaTypeNames.Text.Html)));
 
-app.MapPost("/auth/login", async (UserLoginDto loginDto, [FromQuery] string returnUrl,
-    IIdentityServerInteractionService interaction, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager) =>
+app.MapPost("/auth/login", Login);
+
+app.MapPost("/auth/register", Register);
+
+await app.RunAsync();
+
+static async Task<IResult> Login(UserLoginDto loginDto, [FromQuery] string returnUrl,
+    IIdentityServerInteractionService interaction, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
 {
     var context = await interaction.GetAuthorizationContextAsync(returnUrl);
 
@@ -154,9 +158,7 @@ app.MapPost("/auth/login", async (UserLoginDto loginDto, [FromQuery] string retu
     }
 
     return Results.BadRequest(signInResult);
-});
-
-await app.RunAsync();
+}
 
 static async Task<IResult> Register(UserRegistrationDto registrationDto, UserManager<AppUser> userManager,
     IValidator<UserRegistrationDto> validator, ITokenService tokenService)
