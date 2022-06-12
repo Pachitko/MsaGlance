@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.ApiName = "DiskApi";
     });
 
+builder.Services.AddAuthorization(c =>
+{
+    c.AddPolicy("disk.api.read", b => b
+        .RequireScope("disk.api.read")
+        .Build());
+    c.AddPolicy("disk.api.write", b => b
+        .RequireScope("disk.api.write")
+        .Build());
+});
+
 var app = builder.Build();
 
 app.UseAuthentication();
@@ -34,10 +45,10 @@ app.UseAuthorization();
 
 app.MapGet("/", () => $"Disk {DateTime.UtcNow}");
 
-app.MapGet("/secret", (HttpContext ctx) =>
+app.MapGet("/secret", (HttpRequest s) =>
 {
-    return "Disk secret";
+    return Results.Content("Disk secret");
 })
-    .RequireAuthorization();
+    .RequireAuthorization("disk.api.read");
 
 app.Run();
