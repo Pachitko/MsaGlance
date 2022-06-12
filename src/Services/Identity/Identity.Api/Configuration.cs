@@ -20,9 +20,11 @@ namespace Identity.Api
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Email,
                         "disk.api.read"
                     },
                     AlwaysIncludeUserClaimsInIdToken = true,
+                    AlwaysSendClientClaims = true,
                     AllowAccessTokensViaBrowser = true,
                     // AllowedCorsOrigins = { "https://oauth.pstmn.io" },
                     RedirectUris = { "https://oauth.pstmn.io/v1/callback", "http://localhost:5000/" },
@@ -32,7 +34,6 @@ namespace Identity.Api
                     ClientId = "Passworded",
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     RequireClientSecret = false,
-                    AlwaysIncludeUserClaimsInIdToken = false,
                     AllowedScopes =
                     {
                         "disk.api.read",
@@ -54,8 +55,7 @@ namespace Identity.Api
                     AllowedScopes =
                     {
                         "disk.api.read",
-                        "disk.api.write",
-                        "disk.api.full"
+                        "disk.api.write"
                     },
                     RequireConsent = false
                 }
@@ -66,7 +66,6 @@ namespace Identity.Api
             {
                 new ApiScope("disk.api.read", "Disk API read"),
                 new ApiScope("disk.api.write", "Disk API write"),
-                new ApiScope("disk.api.full", "Disk API full")
             };
 
         internal static IEnumerable<IdentityResource> IdentityResources
@@ -91,9 +90,8 @@ namespace Identity.Api
                     Scopes = {
                         "disk.api.read",
                         "disk.api.write",
-                        "disk.api.full"
                     },
-                    // UserClaims = new List<string> {"role"}
+                    UserClaims = new List<string> {JwtClaimTypes.Role}
                 }
             };
     }
