@@ -18,6 +18,9 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using Microsoft.Net.Http.Headers;
 using IdentityServer4.Services;
+using FluentValidation;
+using System.Threading.Tasks;
+using Identity.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +99,8 @@ builder.Services.AddFluentValidation(config =>
 var app = builder.Build();
 await app.Services.CreateScope().ServiceProvider.SeedDataAsync();
 
+app.UseCors(c => c.WithOrigins("http://webapi").AllowAnyHeader().AllowAnyMethod());
+
 app.UseIdentityServer();
 
 app.MapGet("/", () =>
@@ -113,6 +118,8 @@ app.MapGet("/roles", async (RoleManager<AppRole> roleManager) =>
 {
     return await roleManager.Roles.ToListAsync();
 });
+
+app.MapPost("/auth/register", Register);
 
 app.MapGet("/auth/login", async () =>
     Results.Content(await File.ReadAllTextAsync("./wwwroot/login.html"),
@@ -146,8 +153,40 @@ app.MapPost("/auth/login", async (UserLoginDto loginDto, [FromQuery] string retu
         }
     }
 
-    return Results.BadRequest("Sign in error");
-
-}).RequireCors(builder => builder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+    return Results.BadRequest(signInResult);
+});
 
 await app.RunAsync();
+
+static async Task<IResult> Register(UserRegistrationDto registrationDto, UserManager<AppUser> userManager,
+    IValidator<UserRegistrationDto> validator, ITokenService tokenService)
+{
+    var validationResult = await validator.ValidateAsync(registrationDto);
+    if (!validationResult.IsValid)
+        return Results.ValidationProblem(validationResult.ToDictionary());
+
+    AppUser newUser = new()
+    {
+        UserName = registrationDto.Username,
+        Email = registrationDto.Email
+    };
+
+    var createUserResult = await userManager.CreateAsync(newUser, registrationDto.Password);
+
+    if (createUserResult.Succeeded)
+    {
+        var addToRoleResult = await userManager.AddToRoleAsync(newUser, "User");
+        if (addToRoleResult.Succeeded)
+        {
+            return Results.Ok("User has been created!");
+        }
+        else
+        {
+            return Results.BadRequest(addToRoleResult.Errors);
+        }
+    }
+    else
+    {
+        return Results.BadRequest(createUserResult.Errors);
+    }
+}

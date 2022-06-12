@@ -19,8 +19,10 @@ namespace Identity.Api
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
                         "disk.api.read"
                     },
+                    AlwaysIncludeUserClaimsInIdToken = true,
                     AllowAccessTokensViaBrowser = true,
                     // AllowedCorsOrigins = { "https://oauth.pstmn.io" },
                     RedirectUris = { "https://oauth.pstmn.io/v1/callback", "http://localhost:5000/" },
@@ -30,6 +32,7 @@ namespace Identity.Api
                     ClientId = "Passworded",
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     RequireClientSecret = false,
+                    AlwaysIncludeUserClaimsInIdToken = false,
                     AllowedScopes =
                     {
                         "disk.api.read",
@@ -38,7 +41,7 @@ namespace Identity.Api
                         IdentityServerConstants.StandardScopes.Email,
                         JwtClaimTypes.Role
                     },
-                    AllowOfflineAccess = true,
+                    AllowOfflineAccess = false,
                 },
                 new Client()
                 {
@@ -52,9 +55,7 @@ namespace Identity.Api
                     {
                         "disk.api.read",
                         "disk.api.write",
-                        "disk.api.full",
-                        IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        "disk.api.full"
                     },
                     RequireConsent = false
                 }
