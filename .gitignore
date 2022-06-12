@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 .vscode/
 *.jwk
+certs/

@@ -66,8 +66,10 @@ services:
       target: debug
     ports:
       - "5000:80"
+      - "5443:443"
     networks:
       - main_net
     volumes:
+      - ./certs/:/https/
       - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
       - ${SERVICES}Identity/Identity.Api:/src
