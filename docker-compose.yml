@@ -33,6 +33,19 @@ services:
       start_period: 10s
     networks:
       - main_net
+  telegram_bot:
+    container_name: telegram_bot
+    image: telegram_bot:dev
+    build:
+      context: ${SERVICES}TelegramBot/TelegramBot.Api
+      target: debug
+    networks:
+      - main_net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTPS_PORT=443
+    volumes:
+      - ${SERVICES}TelegramBot/TelegramBot.Api:/src
   webapi:
     container_name: webapi
     image: webapi:dev
