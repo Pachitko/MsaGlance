@@ -27,7 +27,7 @@ namespace Identity.Api
                     AlwaysSendClientClaims = true,
                     AllowAccessTokensViaBrowser = true,
                     // AllowedCorsOrigins = { "https://oauth.pstmn.io" },
-                    RedirectUris = { "https://oauth.pstmn.io/v1/callback", "http://localhost:5000/" },
+                    RedirectUris = { "https://oauth.pstmn.io/v1/callback" },
                 },
                 new Client
                 {

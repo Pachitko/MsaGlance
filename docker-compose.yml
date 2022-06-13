@@ -40,10 +40,17 @@ services:
       context: ${SERVICES}Web/Web.Api
       target: debug
     ports:
-      - "5002:80"
+      - "127.0.0.1:4432:443"
     networks:
       - main_net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://*:443
+      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/webapi.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
     volumes:
+      - ./certs/webapi:/https/:ro
       - ${SERVICES}Web/Web.Api:/src
   disk:
     container_name: disk
@@ -52,10 +59,17 @@ services:
       context: ${SERVICES}Disk/Disk.Api
       target: debug
     ports:
-      - "5001:80"
+      - "127.0.0.1:4431:443"
     networks:
       - main_net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/disk.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/disk.key
     volumes:
+      - ./certs/disk/:/https/:ro
       - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
       - ${SERVICES}Disk/Disk.Api:/src
   idsrv:
@@ -65,11 +79,16 @@ services:
       context: ${SERVICES}Identity/Identity.Api
       target: debug
     ports:
-      - "5000:80"
-      - "5443:443"
+      - "127.0.0.1:4430:443"
     networks:
       - main_net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/idsrv.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/idsrv.key
     volumes:
-      - ./certs/:/https/
+      - ./certs/idsrv/:/https/:ro
       - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
       - ${SERVICES}Identity/Identity.Api:/src

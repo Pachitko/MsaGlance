@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using IdentityModel.Client;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -36,11 +38,7 @@ static async Task<IResult> GetFilesAsync(IHttpClientFactory httpClientFactory, I
     var authClient = httpClientFactory.CreateClient();
     DiscoveryDocumentRequest discoveryDocumentRequest = new()
     {
-        Address = "http://idsrv",
-        Policy = new DiscoveryPolicy()
-        {
-            RequireHttps = false
-        }
+        Address = "https://idsrv",
     };
     var discoveryDocument = await authClient.GetDiscoveryDocumentAsync(discoveryDocumentRequest);
 

@@ -54,7 +54,7 @@ builder.Services
 var idsrvBuilder = builder.Services
     .AddIdentityServer(c =>
     {
-        c.IssuerUri = "http://idsrv";
+        c.IssuerUri = "https://idsrv";
         c.UserInteraction.LoginUrl = "/auth/login";
     })
     .AddAspNetIdentity<AppUser>()
@@ -110,8 +110,6 @@ app.Use(async (httpContext, next) =>
     }
     await next();
 });
-
-app.UseCors(c => c.WithOrigins("http://webapi").AllowAnyHeader().AllowAnyMethod());
 
 app.UseIdentityServer();
 

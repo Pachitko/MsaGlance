@@ -2,6 +2,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS debug
 
 WORKDIR /src
 
+COPY ./certs/idsrv.crt /usr/local/share/ca-certificates/idsrv.crt
+COPY ./certs/disk.crt /usr/local/share/ca-certificates/disk.crt
+RUN update-ca-certificates
+
 COPY Web.Api.csproj .
 RUN dotnet restore
 COPY . .
