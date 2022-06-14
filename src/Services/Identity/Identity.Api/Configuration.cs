@@ -37,6 +37,7 @@ namespace Identity.Api
                     AllowedScopes =
                     {
                         "disk.api.read",
+                        "disk.api.write",
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Email,

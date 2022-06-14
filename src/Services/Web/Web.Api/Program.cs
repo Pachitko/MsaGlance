@@ -53,7 +53,7 @@ static async Task<IResult> GetFilesAsync(IHttpClientFactory httpClientFactory, I
     var diskClient = httpClientFactory.CreateClient();
     diskClient.BaseAddress = new Uri(integration.Value.DiskApiEndpoint);
     diskClient.SetBearerToken(tokenResponse.AccessToken);
-    var response = await diskClient.GetAsync("/secret");
+    var response = await diskClient.GetAsync("/files");
 
     if (response.IsSuccessStatusCode)
     {
