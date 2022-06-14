@@ -5,8 +5,8 @@ volumes:
     name: disk_data_protection_keys
   idsrv_data_protection_keys:
     name: idsrv_data_protection_keys
-  idsrv_db:
-    name: idsrv_db
+  psql_db:
+    name: psql_db
     external: false
 
 networks:
@@ -14,13 +14,13 @@ networks:
     driver: bridge
 
 services:
-  idsrv_db:
+  psql_db:
     image: postgres:14.3
-    container_name: idsrv_db
+    container_name: psql_db
     ports:
       - "2345:5432"
     volumes:
-      - idsrv_db:/var/lib/postgresql/data
+      - psql_db:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: "idsrv"
       POSTGRES_USER: "puser"
@@ -33,9 +33,11 @@ services:
       start_period: 10s
     networks:
       - main_net
-  telegram_bot:
-    container_name: telegram_bot
-    image: telegram_bot:dev
+  tele_bot:
+    container_name: tele_bot
+    image: tele_bot:dev
+    ports:
+      - "127.0.0.1:8003:80"
     build:
       context: ${SERVICES}TelegramBot/TelegramBot.Api
       target: debug
@@ -43,7 +45,7 @@ services:
       - main_net
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_URLS=http://*:80
     volumes:
       - ${SERVICES}TelegramBot/TelegramBot.Api:/src
   webapi:
