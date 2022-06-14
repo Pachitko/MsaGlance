@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.9'
 
 volumes:
   disk_data_protection_keys:
@@ -46,6 +46,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://*:80
+      - BOT_TOKEN=${BOT_TOKEN}
     volumes:
       - ${SERVICES}TelegramBot/TelegramBot.Api:/src
   webapi:

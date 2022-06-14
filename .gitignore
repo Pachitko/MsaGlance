@@ -365,3 +365,4 @@ FodyWeavers.xsd
 .vscode/
 *.jwk
 certs/
+.env.dev

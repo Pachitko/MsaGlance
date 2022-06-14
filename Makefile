@@ -1,10 +1,10 @@
 DOCKER_COMPOSE_BUILD = docker compose -f docker-compose.yml build
 DOCKER_COMPOSE_BUILD_PROD = docker compose -f docker-compose.prod.yml build
 
-DOCKER_COMPOSE_UP = docker compose up --build -d
+DOCKER_COMPOSE_UP = docker compose -f docker-compose.yml --env-file .env.dev up --build -d
 DOCKER_COMPOSE_UP_PROD = docker compose -f docker-compose.prod.yml up --build -d
 
-DOCKER_COMPOSE_DOWN = docker compose down
+DOCKER_COMPOSE_DOWN = docker compose  --env-file .env.dev down
 DOCKER_COMPOSE_LOGS = docker compose logs -f
 DOCKER_DROP_DB = docker volume rm idsrv_db
 
@@ -23,10 +23,6 @@ dropdb:
 prune:
 	docker system prune
 publish_docker:
-#	docker build ./api/ -t pachitko/minimal_api:1.0
-#	docker build ./server/ -t pachitko/proxy:1.0
-#	docker push pachitko/minimal_api:1.0
-#	docker push pachitko/proxy:1.0
 
 build:
 	$(DOCKER_COMPOSE_BUILD)
