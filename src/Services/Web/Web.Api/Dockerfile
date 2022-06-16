@@ -9,8 +9,9 @@ RUN update-ca-certificates
 COPY Web.Api.csproj .
 RUN dotnet restore
 COPY . .
+RUN ["dotnet", "build"]
 
-CMD ["dotnet", "run"]
+CMD ["dotnet", "run", "--no-build"]
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /source

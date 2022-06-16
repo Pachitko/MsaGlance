@@ -47,8 +47,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://*:80
       - BOT_TOKEN=${BOT_TOKEN}
-    volumes:
-      - ${SERVICES}TelegramBot/TelegramBot.Api:/src
+      - WEB_HOOK_ENDPOINT=${WEB_HOOK_ENDPOINT}
   webapi:
     container_name: webapi
     image: webapi:dev
@@ -67,7 +66,6 @@ services:
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
     volumes:
       - ./certs/webapi:/https/:ro
-      - ${SERVICES}Web/Web.Api:/src
   disk:
     container_name: disk
     image: disk:dev
@@ -87,7 +85,6 @@ services:
     volumes:
       - ./certs/disk/:/https/:ro
       - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
-      - ${SERVICES}Disk/Disk.Api:/src
   idsrv:
     container_name: idsrv
     image: idsrv:dev
@@ -107,4 +104,3 @@ services:
     volumes:
       - ./certs/idsrv/:/https/:ro
       - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
-      - ${SERVICES}Identity/Identity.Api:/src
