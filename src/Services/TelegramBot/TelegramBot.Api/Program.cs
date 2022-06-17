@@ -1,18 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
+using TelegramBot.Api.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using TelegramBot.Api.Services;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using Serilog;
-using Microsoft.Extensions.Configuration;
-using Telegram.Bot;
-using System;
-using Telegram.Bot.Types.Enums;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using TelegramBot.Api.Options;
 using TelegramBot.Api;
 using Serilog.Events;
+using Serilog;
+using System;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,15 +21,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// todo: Extract to a separate extension method
-builder.Services.AddOptions<TelegramBotOptions>().Configure<IConfiguration>((o, c) =>
-{
-    o.BotToken = c.GetValue<string>("BOT_TOKEN");
-    o.WebHookEndpoint = c.GetValue<string>("WEB_HOOK_ENDPOINT");
-});
-
-builder.Services.AddSingleton<TelegramBotWrapper>();
-builder.Services.AddHostedService<TelegramBotInitializationHostedService>();
+builder.Services.AddTelegramBot();
 
 var app = builder.Build();
 
@@ -41,17 +31,17 @@ app.MapPost("/update", Update);
 
 await app.RunAsync();
 
-static async Task<IResult> Update([FromBody] object updateDto, TelegramBotWrapper bot)
+static async Task<IResult> Update([FromBody] object updateDto, ICommandExecutor commandExecutor, ILogger<Program> logger)
 {
-    TelegramBotClient botClient = await bot.GetClientAsync();
-    Update update = JsonConvert.DeserializeObject<Update>(updateDto.ToString());
-    if (update.Type == UpdateType.Message)
+    try
     {
-        if (update.Message!.Type == MessageType.Text)
-        {
-            await botClient.SendTextMessageAsync(update.Message.Chat.Id, update.Message.Text!, ParseMode.Markdown);
-        }
+        Update update = JsonConvert.DeserializeObject<Update>(updateDto.ToString());
+        await commandExecutor.ExecuteAsync(update);
+    }
+    catch (InvalidOperationException e)
+    {
+        logger.LogError(e, "Command does not exist");
     }
 
-    return Results.Ok(botClient.BotId);
+    return Results.Ok();
 }
