@@ -18,8 +18,10 @@ public static class ServiceCollectionExtensions
             });
 
         services.AddSingleton<TelegramBotWrapper>();
-        services.AddSingleton<IBotCommand, EchoCommand>();
+        services.AddSingleton<IBotCommandHandler, EchoHandler>();
+        services.AddSingleton<IBotCommandHandler, RegistrationHandler>();
 
+        services.AddScoped<TelegramUserStateManager>();
         services.AddScoped<ICommandExecutor, CommandExecutor>();
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
 

@@ -2,5 +2,8 @@ namespace TelegramBot.Api.Commands;
 
 public enum BotCommandType : byte
 {
-    Echo = 0,
+    Text = 0,
+    Echo,
+    Login,
+    Register,
 }

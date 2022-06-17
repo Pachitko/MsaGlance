@@ -6,15 +6,20 @@ using System.Data;
 using Dapper;
 using Npgsql;
 using System;
+using TelegramBot.Api.Commands;
+using Microsoft.Extensions.Logging;
 
 namespace TelegramBot.Api.Data.Repositories;
 
 public class TelegramUserRepository : ITelegramUserRepository
 {
     private readonly string _dbConnectionString;
-    public TelegramUserRepository(IConfiguration configuration)
+    private readonly ILogger<TelegramUserRepository> _logger;
+
+    public TelegramUserRepository(IConfiguration configuration, ILogger<TelegramUserRepository> logger)
     {
         _dbConnectionString = configuration.GetConnectionString("DefaultConnection");
+        _logger = logger;
     }
 
     internal IDbConnection Connection => new NpgsqlConnection(_dbConnectionString);
@@ -28,20 +33,21 @@ public class TelegramUserRepository : ITelegramUserRepository
                 (id, identity_id, chat_id, username, state)
             VALUES
                 (@Id, @IdentityId, @ChatId, @Username, @State)", item);
+        _logger.LogDebug("User created: {@newUser}", item);
     }
 
-    public async Task SetStateAsync(long id, string newState)
+    public async Task SetStateAsync(long id, UserState newState)
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        await dbConnection.ExecuteAsync("UPDATE users SET state = @newState WHERE id = @id", new { newState, id });
+        await dbConnection.ExecuteAsync("UPDATE users SET state = @newState WHERE id = @id", new { newState = newState.ToString(), id });
     }
 
-    public async Task<string> GetStateAsync(long id)
+    public async Task<UserState> GetStateAsync(long id)
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        return await dbConnection.QueryFirstAsync<string>("SELECT state FROM users WHERE id = @id", id);
+        return Enum.Parse<UserState>(await dbConnection.QueryFirstAsync<string>("SELECT state FROM users WHERE id = @id", id), true);
     }
 
     public async Task<IEnumerable<TelegramUser>> GetAllAsync()

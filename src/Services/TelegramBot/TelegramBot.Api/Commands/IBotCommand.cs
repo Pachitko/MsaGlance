@@ -4,8 +4,7 @@ using Telegram.Bot;
 
 namespace TelegramBot.Api.Commands;
 
-public interface IBotCommand
+public interface IBotCommandHandler
 {
-    BotCommandType CommandType { get; }
-    Task ExecuteAsync(Update update, TelegramBotClient botClient);
+    Task<UserState> HandleAsync(UserState currentState, Update update, TelegramBotClient botClient);
 }

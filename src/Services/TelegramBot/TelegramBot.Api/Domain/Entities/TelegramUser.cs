@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using TelegramBot.Api.Commands;
 
 namespace TelegramBot.Api.Domain.Entities;
 
@@ -12,5 +13,5 @@ public class TelegramUser : BaseEntity<long>
     [Column("username")]
     public string Username { get; set; }
     [Column("state")]
-    public string State { get; set; }
+    public UserState State { get; set; }
 }

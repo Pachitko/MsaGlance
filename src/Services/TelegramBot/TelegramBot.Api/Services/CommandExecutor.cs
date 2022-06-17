@@ -1,42 +1,33 @@
-using TelegramBot.Api.Data.Repositories;
+using Microsoft.Extensions.Logging;
+using TelegramBot.Api.Exceptions;
 using System.Collections.Generic;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Api.Commands;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using System.Linq;
-using Serilog;
 using System;
-using TelegramBot.Api.Domain.Entities;
-using Microsoft.Extensions.Logging;
-using TelegramBot.Api.Exceptions;
 
 namespace TelegramBot.Api.Services;
 
 public class CommandExecutor : ICommandExecutor
 {
-    private const BotCommandType DefaultCommand = BotCommandType.Echo;
-    private readonly IEnumerable<IBotCommand> _commands;
+    private const BotCommandType DefaultCommand = BotCommandType.Text;
+    private readonly IEnumerable<IBotCommandHandler> _commands;
     private readonly TelegramBotWrapper _botWrapper;
-    private readonly ITelegramUserRepository _userRepository;
     private readonly ILogger<CommandExecutor> _logger;
-
-    // (currentState, command) -> newState
-    private static readonly Dictionary<(string, BotCommandType), string> _transitions = new()
-    {
-        {("", BotCommandType.Echo), ""}
-    };
+    private readonly TelegramUserStateManager _telegramUserStateManager;
 
     public CommandExecutor(
-        IEnumerable<IBotCommand> commands,
+        IEnumerable<IBotCommandHandler> commands,
         TelegramBotWrapper botWrapper,
-        ITelegramUserRepository userRepository,
-        ILogger<CommandExecutor> logger)
+        ILogger<CommandExecutor> logger,
+        TelegramUserStateManager telegramUserStateManager)
     {
         _botWrapper = botWrapper ?? throw new NullReferenceException(nameof(botWrapper));
         _commands = commands ?? throw new NullReferenceException(nameof(commands));
-        _userRepository = userRepository ?? throw new NullReferenceException(nameof(userRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _telegramUserStateManager = telegramUserStateManager ?? throw new ArgumentNullException(nameof(telegramUserStateManager));
     }
 
     public async Task ExecuteAsync(Update update)
@@ -49,40 +40,22 @@ public class CommandExecutor : ICommandExecutor
                 {
                     long userId = update.Message.From.Id;
 
-                    if (await _userRepository.GetByIdAsync(userId) == null)
-                    {
-                        TelegramUser newTelegramUser = new()
-                        {
-                            Id = userId,
-                            IdentityId = null,
-                            ChatId = update.Message.Chat.Id,
-                            Username = update.Message.From.Username!,
-                            State = ""
-                        };
-
-                        await _userRepository.AddAsync(newTelegramUser);
-                        _logger.LogDebug("User created: {@newUser}", newTelegramUser);
-                    }
-
                     string msgText = update.Message!.Text!;
                     _logger.LogInformation("Message text: {messageText}", msgText);
 
-                    BotCommandType selectedCommandType = GetCommandType(msgText);
-                    _logger.LogInformation("Selected command type: {selectedCommand}", selectedCommandType);
+                    BotCommandType commandType = GetCommandType(msgText);
+                    _logger.LogInformation("Selected command type: {selectedCommand}", commandType);
 
-                    IBotCommand command = _commands.Single(c => c.CommandType == selectedCommandType);
+                    var handlerType = await _telegramUserStateManager.GetCommandHandlerTypeAsync(update, commandType);
 
-                    await SetUserStateAsync(userId, selectedCommandType);
-                    await command.ExecuteAsync(update, await _botWrapper.GetClientAsync());
+                    IBotCommandHandler handler = _commands.Single(c => c.GetType() == handlerType);
+                    var currentState = await _telegramUserStateManager.GetStateAsync(userId);
+
+                    UserState nextState = await handler.HandleAsync(currentState, update, await _botWrapper.GetClientAsync());
+                    await _telegramUserStateManager.SetStateAsync(userId, nextState);
                 }
             }
         }
-    }
-
-    private async Task SetUserStateAsync(long userId, BotCommandType commandType)
-    {
-        string currentState = await _userRepository.GetStateAsync(userId);
-        await _userRepository.SetStateAsync(userId, _transitions[(currentState, commandType)]);
     }
 
     private static BotCommandType GetCommandType(string rawCommand)

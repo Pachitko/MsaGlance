@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
+using TelegramBot.Api.Exceptions;
 using TelegramBot.Api.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +12,6 @@ using TelegramBot.Api;
 using Serilog.Events;
 using Serilog;
 using System;
-using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,9 +39,9 @@ static async Task<IResult> Update([FromBody] object updateDto, ICommandExecutor 
         Update update = JsonConvert.DeserializeObject<Update>(updateDto.ToString());
         await commandExecutor.ExecuteAsync(update);
     }
-    catch (InvalidOperationException e)
+    catch (BotCommandDoesNotExistException e)
     {
-        logger.LogError(e, "Command does not exist");
+        logger.LogError(e, "Bot command does not exist");
     }
 
     return Results.Ok();
