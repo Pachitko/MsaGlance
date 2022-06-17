@@ -31,7 +31,7 @@ public class TelegramBotInitializationHostedService : BackgroundService
         }
         catch (Exception e)
         {
-            _logger.LogError("Exception occured: {exception}", e);
+            _logger.LogError("Exception has occured: {exception}", e);
         }
     }
 

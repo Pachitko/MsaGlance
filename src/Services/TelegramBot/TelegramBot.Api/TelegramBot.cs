@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using TelegramBot.Api.Options;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Serilog;
-using Microsoft.Extensions.Logging;
 
 namespace TelegramBot.Api;
 

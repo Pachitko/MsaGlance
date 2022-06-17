@@ -3,7 +3,7 @@ ENV_DEV = --env-file .env.dev
 DOCKER_COMPOSE_BUILD = docker compose -f docker-compose.yml build
 DOCKER_COMPOSE_BUILD_PROD = docker compose -f docker-compose.prod.yml build
 
-DOCKER_COMPOSE_UP = docker compose -f docker-compose.yml ${ENV_DEV} up --build -d
+DOCKER_COMPOSE_UP = docker compose -f docker-compose.yml ${ENV_DEV} up --build -d ${s}
 DOCKER_COMPOSE_UP_PROD = docker compose -f docker-compose.prod.yml up --build -d
 
 DOCKER_COMPOSE_DOWN = docker compose  ${ENV_DEV} down
@@ -36,7 +36,7 @@ build-prod:
 up:
 	$(DOCKER_COMPOSE_UP)
 reup:
-	docker compose  ${ENV_DEV} -f docker-compose.yml up -d --no-deps --build $(s)
+	docker compose ${ENV_DEV} -f docker-compose.yml restart $(s)
 up-prod:
 	$(DOCKER_COMPOSE_UP_PROD)
 
