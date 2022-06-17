@@ -9,6 +9,7 @@ using Serilog;
 using System;
 using TelegramBot.Api.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using TelegramBot.Api.Exceptions;
 
 namespace TelegramBot.Api.Services;
 
@@ -101,7 +102,7 @@ public class CommandExecutor : ICommandExecutor
             }
             else
             {
-                throw new InvalidOperationException($"Command type '{commandName}' does not exist in enum {nameof(BotCommandType)}");
+                throw new BotCommandDoesNotExistException($"Command type '{commandName}' does not exist in enum {nameof(BotCommandType)}");
             }
         }
 
