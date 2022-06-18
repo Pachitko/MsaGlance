@@ -4,6 +4,8 @@ using TelegramBot.Api.Data.Repositories;
 using TelegramBot.Api.Services;
 using TelegramBot.Api.Commands;
 using TelegramBot.Api.Options;
+using System.Linq;
+using System;
 
 namespace TelegramBot.Api.Extensions;
 
@@ -17,13 +19,23 @@ public static class ServiceCollectionExtensions
                 o.WebHookEndpoint = c.GetValue<string>("WEB_HOOK_ENDPOINT");
             });
 
+        Type botCommandHandlerType = typeof(IBotCommandHandler);
+        var botCommandHandlerTypes = botCommandHandlerType
+            .Assembly.GetTypes()
+            .Where(t => botCommandHandlerType.IsAssignableFrom(t) && !t.IsInterface);
+
+        foreach (var botCommandHandlerImplementation in botCommandHandlerTypes)
+        {
+            services.AddScoped(typeof(IBotCommandHandler), botCommandHandlerImplementation);
+        }
+
+        services.AddHttpClient();
         services.AddSingleton<TelegramBotWrapper>();
-        services.AddSingleton<IBotCommandHandler, EchoHandler>();
-        services.AddSingleton<IBotCommandHandler, RegistrationHandler>();
 
         services.AddScoped<TelegramUserStateManager>();
         services.AddScoped<ICommandExecutor, CommandExecutor>();
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
+        services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
         services.AddHostedService<TelegramBotInitializationHostedService>();
 

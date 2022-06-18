@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TelegramBot.Api.Data.Repositories
 {
-    public interface IRepository<T, TKey> where T : BaseEntity<TKey>
+    public interface IRepository<T, TKey> where T : class
     {
         Task AddAsync(T item);
         Task RemoveAsync(TKey id);

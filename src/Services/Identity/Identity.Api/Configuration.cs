@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Security.Claims;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Models;
@@ -38,12 +37,13 @@ namespace Identity.Api
                     {
                         "disk.api.read",
                         "disk.api.write",
+                        IdentityServerConstants.StandardScopes.OfflineAccess,
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Email,
                         JwtClaimTypes.Role
                     },
-                    AllowOfflineAccess = false,
+                    AllowOfflineAccess = true,
                 },
                 new Client()
                 {
