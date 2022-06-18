@@ -1,23 +1,22 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # 
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{A4220E47-47F9-4ABC-B764-A9D86998C23A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "src\Services", "{A4220E47-47F9-4ABC-B764-A9D86998C23A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{6E455223-9528-4B7D-AAAA-D553185C28AB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "src\Identity", "{6E455223-9528-4B7D-AAAA-D553185C28AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Api", "Services\Identity\Identity.Api\Identity.Api.csproj", "{734D0A79-47B8-4C25-8D84-B44760F69B42}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.Api", "src\Services\Identity\Identity.Api\Identity.Api.csproj", "{734D0A79-47B8-4C25-8D84-B44760F69B42}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Disk", "Disk", "{4827F2CD-EB61-4DE9-99B6-73CDDBB41D24}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Disk", "src\Disk", "{4827F2CD-EB61-4DE9-99B6-73CDDBB41D24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disk.Api", "Services\Disk\Disk.Api\Disk.Api.csproj", "{7E9E0EE6-4B64-4EE6-BED9-855111912CCB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disk.Api", "src\Services\Disk\Disk.Api\Disk.Api.csproj", "{7E9E0EE6-4B64-4EE6-BED9-855111912CCB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{0B1FBC1F-0189-44A9-9723-3E997BB5C8E0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "src\Web", "{0B1FBC1F-0189-44A9-9723-3E997BB5C8E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Api", "Services\Web\Web.Api\Web.Api.csproj", "{3E9BC458-8AEF-443A-ACDD-63A5344FD380}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Api", "src\Services\Web\Web.Api\Web.Api.csproj", "{3E9BC458-8AEF-443A-ACDD-63A5344FD380}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TelegramBot", "TelegramBot", "{DC46A8EB-B0D2-4CBC-BD7C-96CE58AAD00B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TelegramBot", "src\TelegramBot", "{DC46A8EB-B0D2-4CBC-BD7C-96CE58AAD00B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot.Api", "Services\TelegramBot\TelegramBot.Api\TelegramBot.Api.csproj", "{CC38FA6E-5894-4E55-BDF8-CF6338B2AB23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot.Api", "src\Services\TelegramBot\TelegramBot.Api\TelegramBot.Api.csproj", "{CC38FA6E-5894-4E55-BDF8-CF6338B2AB23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
