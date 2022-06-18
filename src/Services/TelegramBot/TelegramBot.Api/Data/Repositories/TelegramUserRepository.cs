@@ -29,10 +29,8 @@ public class TelegramUserRepository : ITelegramUserRepository
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
         await dbConnection.ExecuteAsync(
-            @$"INSERT INTO users
-                (id, identity_id, chat_id, username, state)
-            VALUES
-                (@Id, @IdentityId, @ChatId, @Username, @State)", item);
+            @$"INSERT INTO users (id, identity_id, chat_id, username, state)
+            VALUES (@Id, @IdentityId, @ChatId, @Username, @State)", item);
         _logger.LogDebug("User created: {@newUser}", item);
     }
 
@@ -68,7 +66,7 @@ public class TelegramUserRepository : ITelegramUserRepository
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        await dbConnection.ExecuteAsync("DELETE FROM users WHERE Id=@Id", new { Id = id });
+        await dbConnection.ExecuteAsync("DELETE FROM users WHERE id=@id", new { id });
     }
 
     public Task UpdateAsync(TelegramUser item)
