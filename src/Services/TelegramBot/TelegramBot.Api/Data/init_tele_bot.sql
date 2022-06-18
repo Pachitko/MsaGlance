@@ -3,7 +3,7 @@ CREATE TABLE users (
     identity_id bigint,
     chat_id bigint,
     username character varying(256),
-    state character varying(256),
+    state smallint,
     CONSTRAINT "PK_users" PRIMARY KEY (id)
 );
 

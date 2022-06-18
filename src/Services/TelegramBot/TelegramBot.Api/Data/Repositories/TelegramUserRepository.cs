@@ -38,14 +38,14 @@ public class TelegramUserRepository : ITelegramUserRepository
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        await dbConnection.ExecuteAsync("UPDATE users SET state = @newState WHERE id = @id", new { newState = newState.ToString(), id });
+        await dbConnection.ExecuteAsync("UPDATE users SET state = @newState WHERE id = @id", new { newState, id });
     }
 
     public async Task<UserState> GetStateAsync(long id)
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        return Enum.Parse<UserState>(await dbConnection.QueryFirstAsync<string>("SELECT state FROM users WHERE id = @id", id), true);
+        return (UserState)await dbConnection.QueryFirstAsync<int>("SELECT state FROM users WHERE id = @id", id);
     }
 
     public async Task<IEnumerable<TelegramUser>> GetAllAsync()
