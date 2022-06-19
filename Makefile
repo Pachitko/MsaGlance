@@ -18,7 +18,7 @@ DISK_API = Disk.Api
 DISK_PROJECT = ./src/Services/Disk/${DISK_API}/${DISK_API}.csproj
 
 restore:
-	dotnet restore ./src/MsaGlance.sln
+	dotnet restore ./MsaGlance.sln
 pgadmin:
 	docker run --rm -d -p 8080:80 --name pgadmin -v pgadmin:/var/lib/pgadmin -e PGADMIN_DEFAULT_EMAIL="a@a.aa" -e PGADMIN_DEFAULT_PASSWORD="b" dpage/pgadmin4:6.9
 dropdb:

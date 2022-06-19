@@ -1,10 +1,10 @@
+using TelegramBot.Api.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Builder;
 using TelegramBot.Api.Exceptions;
 using TelegramBot.Api.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TelegramBot.Api.Services;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Newtonsoft.Json;
@@ -12,7 +12,6 @@ using TelegramBot.Api;
 using Serilog.Events;
 using Serilog;
 using System;
-using TelegramBot.Api.Services.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +45,7 @@ static async Task<IResult> Update([FromBody] object updateDto, IHandlerExecutor 
     }
     catch (Exception e)
     {
-        logger.LogError(e, "");
+        logger.LogError(e, "Error has occured: ");
     }
 
     return Results.Ok();
