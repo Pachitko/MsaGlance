@@ -12,6 +12,7 @@ using TelegramBot.Api;
 using Serilog.Events;
 using Serilog;
 using System;
+using TelegramBot.Api.Services.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,16 +33,20 @@ app.MapPost("/update", Update);
 
 await app.RunAsync();
 
-static async Task<IResult> Update([FromBody] object updateDto, ICommandExecutor commandExecutor, ILogger<Program> logger)
+static async Task<IResult> Update([FromBody] object updateDto, IHandlerExecutor commandExecutor, ILogger<Program> logger)
 {
     try
     {
         Update update = JsonConvert.DeserializeObject<Update>(updateDto.ToString());
-        await commandExecutor.ExecuteAsync(update);
+        await commandExecutor.HandleAsync(update);
     }
     catch (BotCommandDoesNotExistException e)
     {
         logger.LogError(e, "Bot command does not exist");
+    }
+    catch (Exception e)
+    {
+        logger.LogError(e, "");
     }
 
     return Results.Ok();

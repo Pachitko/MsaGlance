@@ -6,7 +6,6 @@ using System.Data;
 using Dapper;
 using Npgsql;
 using System;
-using TelegramBot.Api.Commands;
 using Microsoft.Extensions.Logging;
 
 namespace TelegramBot.Api.Data.Repositories;
@@ -31,21 +30,21 @@ public class TelegramUserRepository : ITelegramUserRepository
         await dbConnection.ExecuteAsync(
             @$"INSERT INTO users (id, identity_id, chat_id, username, state)
             VALUES (@Id, @IdentityId, @ChatId, @Username, @State)", item);
-        _logger.LogDebug("User created: {@newUser}", item);
+        _logger.LogDebug("User created: {@NewUser}", item);
     }
 
-    public async Task SetStateAsync(long id, UserState newState)
+    public async Task SetStateAsync(long id, string newState)
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
         await dbConnection.ExecuteAsync("UPDATE users SET state = @newState WHERE id = @id", new { newState, id });
     }
 
-    public async Task<UserState> GetStateAsync(long id)
+    public async Task<string> GetStateAsync(long id)
     {
         using IDbConnection dbConnection = Connection;
         dbConnection.Open();
-        return (UserState)await dbConnection.QueryFirstAsync<int>("SELECT state FROM users WHERE id = @id", id);
+        return await dbConnection.QueryFirstAsync<string>("SELECT state FROM users WHERE id = @id", id);
     }
 
     public async Task<IEnumerable<TelegramUser>> GetAllAsync()

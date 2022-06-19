@@ -1,14 +1,14 @@
 using TelegramBot.Api.Data.Repositories;
 using TelegramBot.Api.Domain.Entities;
-using System.Collections.Generic;
-using TelegramBot.Api.Commands;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using System;
+using TelegramBot.Api.Domain;
+using TelegramBot.Api.Services.Abstractions;
 
 namespace TelegramBot.Api.Services;
 
-public class TelegramUserStateManager
+public class TelegramUserStateManager : ITelegramUserStateManager
 {
     private readonly ITelegramUserRepository _userRepository;
 
@@ -17,57 +17,33 @@ public class TelegramUserStateManager
         _userRepository = userRepository ?? throw new NullReferenceException(nameof(userRepository));
     }
 
-    // currentState + command = newState (handler)
-    private static readonly Dictionary<(UserState, BotCommandType), Type> _transitions = new()
+    public  async Task<string> GetStateAsync(User user, long chatId)
     {
-        {(UserState.Any, BotCommandType.Text), typeof(EchoHandler)},
+        await CreateUserIfDoesNotExist(user, chatId);
+        return await _userRepository.GetStateAsync(user.Id);
+    }
 
-        {(UserState.Any, BotCommandType.Login), typeof(LoginHandler)},
-        {(UserState.LoginWithUsernameAndPassword, BotCommandType.Text), typeof(LoginHandler)},
-
-        {(UserState.Any, BotCommandType.Register), typeof(RegistrationHandler)},
-        {(UserState.RegisterWithUsernameAndPassword, BotCommandType.Text), typeof(RegistrationHandler)},
-    };
-
-    public async Task<Type> GetCommandHandlerTypeAsync(Update update, BotCommandType commandType)
+    public  async Task SetStateAsync(User user, long chatId, string nextState)
     {
-        if (update.Message?.From == null)
-            throw new NullReferenceException();
-
-        long userId = update.Message.From.Id;
-
+        await CreateUserIfDoesNotExist(user, chatId);
+        await _userRepository.SetStateAsync(user.Id, nextState);
+    }
+    
+    private async Task CreateUserIfDoesNotExist(User user, long chatId)
+    {
         // user is required to save the state
-        if (await _userRepository.GetByIdAsync(userId) == null)
+        if (await _userRepository.GetByIdAsync(user.Id) == null)
         {
             TelegramUser newTelegramUser = new()
             {
-                Id = userId,
+                Id = user.Id,
                 IdentityId = null,
-                ChatId = update.Message.Chat.Id,
-                Username = update.Message.From.Username!,
-                State = UserState.Any
+                ChatId = chatId,
+                Username = user.Username!,
+                State = GlobalStates.Any
             };
 
             await _userRepository.AddAsync(newTelegramUser);
         }
-
-        UserState currentState = await GetStateAsync(userId);
-        if (!_transitions.TryGetValue((currentState, commandType), out Type? handlerType))
-        {
-            handlerType = _transitions[(UserState.Any, commandType)];
-            await SetStateAsync(userId, UserState.Any);
-        }
-
-        return handlerType;
-    }
-
-    public async Task<UserState> GetStateAsync(long userId)
-    {
-        return await _userRepository.GetStateAsync(userId);
-    }
-
-    public async Task SetStateAsync(long userId, UserState nextState)
-    {
-        await _userRepository.SetStateAsync(userId, nextState);
     }
 }

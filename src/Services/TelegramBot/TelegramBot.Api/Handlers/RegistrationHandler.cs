@@ -1,33 +1,47 @@
-using Telegram.Bot.Types.Enums;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
-using System.Net.Mime;
-using Newtonsoft.Json;
 using System.Net.Http;
-using Telegram.Bot;
+using System.Net.Mime;
 using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using TelegramBot.Api.Domain;
+using TelegramBot.Api.Extensions;
+using TelegramBot.Api.Handlers.Abstractions;
+using TelegramBot.Api.Options;
+using TelegramBot.Api.UpdateSpecifications;
 
-namespace TelegramBot.Api.Commands;
+namespace TelegramBot.Api.Handlers;
 
-public class RegistrationHandler : IBotCommandHandler
+public class RegistrationHandler : IUpdateHandler
 {
+    private const string RegisterWithUsernameAndPassword = "RegisterWithUsernameAndPassword";
+
     private readonly IHttpClientFactory _httpClientFactory;
 
     public RegistrationHandler(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
     }
-    public async Task<UserState> HandleAsync(UserState currentState, Update update, TelegramBotClient botClient)
+
+    public void AddTransitionsToOptions(UpdateHandlerOptions config)
+    {
+        config.From(GlobalStates.Any).With<RegistrationUpdateSpecification>().To<RegistrationHandler>();
+        config.From(RegisterWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<RegistrationHandler>();
+    }
+
+    public async Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
     {
         string? messageText = update.Message?.Text;
         long? userId = update.Message?.From?.Id;
 
         switch (currentState)
         {
-            case UserState.Any:
+            case GlobalStates.Any:
                 await botClient.SendTextMessageAsync(userId!, "Enter <i>username:email:password</i> to register", ParseMode.Html);
-                return UserState.RegisterWithUsernameAndPassword;
-            case UserState.RegisterWithUsernameAndPassword:
+                return RegisterWithUsernameAndPassword;
+            case RegisterWithUsernameAndPassword:
                 if (messageText != null)
                 {
                     string[] msgTextParts = messageText.Split(':');
@@ -48,9 +62,9 @@ public class RegistrationHandler : IBotCommandHandler
                     await authClient.PostAsync("/auth/register", content);
                     await botClient.SendTextMessageAsync(userId!, $"Registration succeeded", ParseMode.MarkdownV2);
                 }
-                return UserState.Any;
+                return GlobalStates.Any;
         }
 
-        return UserState.Any;
+        return GlobalStates.Any;
     }
 }

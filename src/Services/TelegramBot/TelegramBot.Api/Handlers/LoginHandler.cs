@@ -1,17 +1,23 @@
-using Telegram.Bot.Types.Enums;
-using System.Threading.Tasks;
-using Telegram.Bot.Types;
-using Telegram.Bot;
 using System.Net.Http;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using IdentityModel.Client;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using TelegramBot.Api.Data.Repositories;
+using TelegramBot.Api.Domain;
 using TelegramBot.Api.Domain.Entities;
+using TelegramBot.Api.Extensions;
+using TelegramBot.Api.Handlers.Abstractions;
+using TelegramBot.Api.Options;
+using TelegramBot.Api.UpdateSpecifications;
 
-namespace TelegramBot.Api.Commands;
+namespace TelegramBot.Api.Handlers;
 
-public class LoginHandler : IBotCommandHandler
+public class LoginHandler : IUpdateHandler
 {
+    private const string LoginWithUsernameAndPassword = "LoginWithUsernameAndPassword";
+    
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IUserTokenRepository _userTokenRepository;
 
@@ -20,16 +26,23 @@ public class LoginHandler : IBotCommandHandler
         _httpClientFactory = httpClientFactory;
         _userTokenRepository = userTokenRepository;
     }
-    public async Task<UserState> HandleAsync(UserState currentState, Update update, TelegramBotClient botClient)
+
+    public void AddTransitionsToOptions(UpdateHandlerOptions config)
+    {
+        config.From(GlobalStates.Any).With<LoginUpdateSpecification>().To<LoginHandler>();
+        config.From(LoginWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<LoginHandler>();
+    }
+
+    public async Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
     {
         long? userId = update.Message?.From?.Id;
 
         switch (currentState)
         {
-            case UserState.Any:
+            case GlobalStates.Any:
                 await botClient.SendTextMessageAsync(userId!, "Enter <i>username:password</i>", ParseMode.Html);
-                return UserState.LoginWithUsernameAndPassword;
-            case UserState.LoginWithUsernameAndPassword:
+                return LoginWithUsernameAndPassword;
+            case LoginWithUsernameAndPassword:
                 string messageText = update.Message!.Text!;
 
                 string[] msgTextParts = messageText.Split(':');
@@ -56,16 +69,16 @@ public class LoginHandler : IBotCommandHandler
                 UserToken accessToken = new()
                 {
                     UserId = userId!.Value,
-                    LoginProvider = "idsrv_passworded",
-                    Name = "access_token",
+                    LoginProvider = "idsrv",
+                    Name = IdentityModel.OidcConstants.TokenTypes.AccessToken,
                     Value = response.AccessToken
                 };
 
                 UserToken refreshToken = new()
                 {
                     UserId = userId!.Value,
-                    LoginProvider = "idsrv_passworded",
-                    Name = "refresh_token",
+                    LoginProvider = "idsrv",
+                    Name = IdentityModel.OidcConstants.TokenTypes.RefreshToken,
                     Value = response.RefreshToken
                 };
 
@@ -79,10 +92,10 @@ public class LoginHandler : IBotCommandHandler
                 {
                     await botClient.SendTextMessageAsync(userId!, $"Login error", ParseMode.MarkdownV2);
                 }
-                return UserState.Any;
+                return GlobalStates.Any;
         }
 
-        return UserState.Any;
+        return GlobalStates.Any;
     }
 
     private async Task AddOrUpdateTokenAsync(UserToken token)
