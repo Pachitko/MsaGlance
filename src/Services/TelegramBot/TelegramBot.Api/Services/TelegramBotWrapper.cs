@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Serilog;
 
-namespace TelegramBot.Api;
+namespace TelegramBot.Api.Services;
 
 public class TelegramBotWrapper
 {
