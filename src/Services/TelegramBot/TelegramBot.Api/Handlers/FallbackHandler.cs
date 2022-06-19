@@ -1,9 +1,11 @@
+using TelegramBot.Api.UpdateSpecifications.Abstractions;
 using TelegramBot.Api.Handlers.Abstractions;
 using TelegramBot.Api.Options;
 using TelegramBot.Api.Domain;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot;
+using TelegramBot.Api.Models;
 
 namespace TelegramBot.Api.Handlers;
 
@@ -18,11 +20,11 @@ public class FallbackHandler : IUpdateHandler
     {
     }
 
-    public Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
+    public Task<string> HandleAsync(UpdateContext context)
     {
         // _logger.LogInformation("Fallback handler invoked!");
 
-        long? userId = update.Message?.From?.Id;
+        long? userId = context.Update.Message?.From?.Id;
 
         if (userId is not null)
         {

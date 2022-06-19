@@ -4,11 +4,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Api.Domain;
 using TelegramBot.Api.Extensions;
 using TelegramBot.Api.Handlers.Abstractions;
+using TelegramBot.Api.Models;
 using TelegramBot.Api.Options;
 using TelegramBot.Api.UpdateSpecifications;
 
@@ -31,15 +31,15 @@ public class RegistrationHandler : IUpdateHandler
         config.From(RegisterWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<RegistrationHandler>();
     }
 
-    public async Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
+    public async Task<string> HandleAsync(UpdateContext context)
     {
-        string? messageText = update.Message?.Text;
-        long? userId = update.Message?.From?.Id;
+        string? messageText = context.Update.Message?.Text;
+        long? userId = context.SafeUserId;
 
-        switch (currentState)
+        switch (context.CurrentState)
         {
             case GlobalStates.Any:
-                await botClient.SendTextMessageAsync(userId!, "Enter <i>username:email:password</i> to register", ParseMode.Html);
+                await context.BotClient.SendTextMessageAsync(userId!, "Enter <i>username:email:password</i> to register", ParseMode.Html);
                 return RegisterWithUsernameAndPassword;
             case RegisterWithUsernameAndPassword:
                 if (messageText != null)
@@ -60,7 +60,7 @@ public class RegistrationHandler : IUpdateHandler
                     var authClient = _httpClientFactory.CreateClient();
                     authClient.BaseAddress = new System.Uri("https://idsrv");
                     await authClient.PostAsync("/auth/register", content);
-                    await botClient.SendTextMessageAsync(userId!, $"Registration succeeded", ParseMode.MarkdownV2);
+                    await context.BotClient.SendTextMessageAsync(userId!, $"Registration succeeded", ParseMode.MarkdownV2);
                 }
                 return GlobalStates.Any;
         }

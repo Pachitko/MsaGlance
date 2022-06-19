@@ -9,15 +9,17 @@ using TelegramBot.Api.Domain;
 using TelegramBot.Api.Domain.Entities;
 using TelegramBot.Api.Extensions;
 using TelegramBot.Api.Handlers.Abstractions;
+using TelegramBot.Api.Models;
 using TelegramBot.Api.Options;
 using TelegramBot.Api.UpdateSpecifications;
+using TelegramBot.Api.UpdateSpecifications.Abstractions;
 
 namespace TelegramBot.Api.Handlers;
 
 public class LoginHandler : IUpdateHandler
 {
     private const string LoginWithUsernameAndPassword = "LoginWithUsernameAndPassword";
-    
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IUserTokenRepository _userTokenRepository;
 
@@ -33,17 +35,17 @@ public class LoginHandler : IUpdateHandler
         config.From(LoginWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<LoginHandler>();
     }
 
-    public async Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
+    public async Task<string> HandleAsync(UpdateContext context)
     {
-        long? userId = update.Message?.From?.Id;
+        long? userId = context.Update.Message?.From?.Id;
 
-        switch (currentState)
+        switch (context.CurrentState)
         {
             case GlobalStates.Any:
-                await botClient.SendTextMessageAsync(userId!, "Enter <i>username:password</i>", ParseMode.Html);
+                await context.BotClient.SendTextMessageAsync(userId!, "Enter <i>username:password</i>", ParseMode.Html);
                 return LoginWithUsernameAndPassword;
             case LoginWithUsernameAndPassword:
-                string messageText = update.Message!.Text!;
+                string messageText = context.Update.Message!.Text!;
 
                 string[] msgTextParts = messageText.Split(':');
                 string username = msgTextParts[0].Trim();
@@ -86,11 +88,11 @@ public class LoginHandler : IUpdateHandler
                 {
                     await AddOrUpdateTokenAsync(accessToken);
                     await AddOrUpdateTokenAsync(refreshToken);
-                    await botClient.SendTextMessageAsync(userId!, $"Login succeeded", ParseMode.MarkdownV2);
+                    await context.BotClient.SendTextMessageAsync(userId!, $"Login succeeded", ParseMode.MarkdownV2);
                 }
                 else
                 {
-                    await botClient.SendTextMessageAsync(userId!, $"Login error", ParseMode.MarkdownV2);
+                    await context.BotClient.SendTextMessageAsync(userId!, $"Login error", ParseMode.MarkdownV2);
                 }
                 return GlobalStates.Any;
         }

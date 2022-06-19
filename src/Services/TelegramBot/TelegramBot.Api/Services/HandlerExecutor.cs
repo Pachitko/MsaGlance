@@ -8,6 +8,8 @@ using TelegramBot.Api.Extensions;
 using TelegramBot.Api.Handlers;
 using TelegramBot.Api.Handlers.Abstractions;
 using TelegramBot.Api.Services.Abstractions;
+using TelegramBot.Api.Models;
+using Telegram.Bot;
 
 namespace TelegramBot.Api.Services;
 
@@ -54,7 +56,10 @@ public class HandlerExecutor : IHandlerExecutor
             {
                 Type? handlerType = _updateHandlerOptions.Get(currentState, spec);
                 IUpdateHandler handler = _updateHandlerFactory.GetUpdateHandler(handlerType);
-                string nextState = await handler.HandleAsync(currentState, update, await _botWrapper.GetClientAsync());
+                TelegramBotClient botClient = await _botWrapper.GetClientAsync();
+                UpdateContext updateContext = new(update, botClient, spec, currentState);
+
+                string nextState = await handler.HandleAsync(updateContext);
                 await _telegramUserStateManager.SetStateAsync(user, chatId, nextState);
             });
     }

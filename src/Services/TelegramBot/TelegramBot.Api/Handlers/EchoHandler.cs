@@ -1,12 +1,12 @@
+using TelegramBot.Api.Handlers.Abstractions;
 using TelegramBot.Api.UpdateSpecifications;
 using TelegramBot.Api.Extensions;
 using Telegram.Bot.Types.Enums;
 using TelegramBot.Api.Options;
 using TelegramBot.Api.Domain;
+using TelegramBot.Api.Models;
 using System.Threading.Tasks;
-using Telegram.Bot.Types;
 using Telegram.Bot;
-using TelegramBot.Api.Handlers.Abstractions;
 
 namespace TelegramBot.Api.Handlers;
 
@@ -17,12 +17,12 @@ public class EchoHandler : IUpdateHandler
         config.From(GlobalStates.Any).With<NotCommandUpdateSpecification>().To<EchoHandler>();
     }
 
-    public async Task<string> HandleAsync(string currentState, Update update, TelegramBotClient botClient)
+    public async Task<string> HandleAsync(UpdateContext context)
     {
-        string? messageText = update.Message?.Text;
-        long? userId = update.Message?.From?.Id;
+        string? messageText = context.Update.Message?.Text;
+        long? userId = context.Update.Message?.From?.Id;
 
-        await botClient.SendTextMessageAsync(userId!, messageText!, ParseMode.MarkdownV2);
+        await context.BotClient.SendTextMessageAsync(userId!, messageText!, ParseMode.MarkdownV2);
 
         return GlobalStates.Any;
     }
