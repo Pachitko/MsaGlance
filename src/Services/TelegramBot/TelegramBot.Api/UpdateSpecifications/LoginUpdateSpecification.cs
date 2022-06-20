@@ -5,5 +5,5 @@ namespace TelegramBot.Api.UpdateSpecifications;
 
 public class LoginUpdateSpecification : CommandUpdateSpecification
 {
-    protected override string CommandName => "login";
+    protected override string CommandName => "/login";
 }

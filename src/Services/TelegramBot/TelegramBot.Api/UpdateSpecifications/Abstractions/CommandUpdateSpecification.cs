@@ -11,8 +11,5 @@ public abstract class CommandUpdateSpecification : TextUpdateSpecification
     }
 
     private static bool IsCommand(string messageText, string expectedCommandName)
-    {
-        messageText = messageText.TrimStart();
-        return messageText.StartsWith($"/{expectedCommandName}", System.StringComparison.OrdinalIgnoreCase);
-    }
+        => messageText.StartsWith(expectedCommandName, System.StringComparison.OrdinalIgnoreCase);
 }

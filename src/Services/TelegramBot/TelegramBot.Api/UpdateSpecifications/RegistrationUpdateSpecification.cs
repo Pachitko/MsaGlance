@@ -4,5 +4,5 @@ namespace TelegramBot.Api.UpdateSpecifications;
 
 public class RegistrationUpdateSpecification : CommandUpdateSpecification
 {
-    protected override string CommandName => "register";
+    protected override string CommandName => "/register";
 }
