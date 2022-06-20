@@ -20,17 +20,18 @@ public class KeyComparer : IEqualityComparer<(string s, Type t)>
     }
 }
 
-public class UpdateHandlerOptions
+// Finite State Machine Options
+public class FsmOptions
 {
     // currentState + specification = newState (set by the handler)
     private readonly Dictionary<(string, Type), Type> _transitions = new(new KeyComparer());
 
     public Type? Get<TSpecification>(string fromState, TSpecification specification)
-        where TSpecification : IUpdateSpecification
+        where TSpecification : IFsmSpecification
             => _transitions.GetValueOrDefault((fromState, specification.GetType()));
 
     public void Add<TSpecification, THandler>(string fromState)
-        where TSpecification : IUpdateSpecification
-        where THandler : IUpdateHandler
+        where TSpecification : IFsmSpecification
+        where THandler : IFsmHandler
             => _transitions.Add((fromState, typeof(TSpecification)), typeof(THandler));
 }

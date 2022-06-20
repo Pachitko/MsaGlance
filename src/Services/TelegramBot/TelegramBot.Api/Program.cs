@@ -32,7 +32,7 @@ app.MapPost("/update", Update);
 
 await app.RunAsync();
 
-static async Task<IResult> Update([FromBody] object updateDto, IHandlerExecutor commandExecutor, ILogger<Program> logger)
+static async Task<IResult> Update([FromBody] object updateDto, IFsmHandlerExecutor commandExecutor, ILogger<Program> logger)
 {
     try
     {

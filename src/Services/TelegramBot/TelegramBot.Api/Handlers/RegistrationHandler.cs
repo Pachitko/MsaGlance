@@ -14,7 +14,7 @@ using TelegramBot.Api.UpdateSpecifications;
 
 namespace TelegramBot.Api.Handlers;
 
-public class RegistrationHandler : IUpdateHandler
+public class RegistrationHandler : IFsmHandler
 {
     private const string RegisterWithUsernameAndPassword = "RegisterWithUsernameAndPassword";
 
@@ -25,7 +25,7 @@ public class RegistrationHandler : IUpdateHandler
         _httpClientFactory = httpClientFactory;
     }
 
-    public void AddTransitionsToOptions(UpdateHandlerOptions config)
+    public void AddTransitionsToFsmOptions(FsmOptions config)
     {
         config.From(GlobalStates.Any).With<RegistrationUpdateSpecification>().To<RegistrationHandler>();
         config.From(RegisterWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<RegistrationHandler>();

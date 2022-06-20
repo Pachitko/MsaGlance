@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace TelegramBot.Api.Services;
 
-public class UpdateSpecificationResolver
+public class FsmSpecificationResolver
 {
-    private readonly IEnumerable<IUpdateSpecification> _updateSpecifications;
+    private readonly IEnumerable<IFsmSpecification> _fsmSpecifications;
 
-    public UpdateSpecificationResolver(IEnumerable<IUpdateSpecification> updateSpecifications)
+    public FsmSpecificationResolver(IEnumerable<IFsmSpecification> fsmSpecifications)
     {
-        _updateSpecifications = updateSpecifications;
+        _fsmSpecifications = fsmSpecifications;
     }
 
-    public IEnumerable<IUpdateSpecification> GetSatisfiedSpecifications(Update update)
-        => _updateSpecifications.Where(spec => spec.IsSatisfiedBy(update));
+    public IEnumerable<IFsmSpecification> GetSatisfiedSpecifications(Update update)
+        => _fsmSpecifications.Where(spec => spec.IsSatisfiedBy(update));
 }

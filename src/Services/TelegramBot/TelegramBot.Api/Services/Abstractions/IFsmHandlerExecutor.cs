@@ -3,7 +3,7 @@ using Telegram.Bot.Types;
 
 namespace TelegramBot.Api.Services.Abstractions;
 
-public interface IHandlerExecutor
+public interface IFsmHandlerExecutor
 {
     Task HandleAsync(Update update);
 }

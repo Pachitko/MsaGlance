@@ -7,16 +7,16 @@ using System;
 
 namespace TelegramBot.Api.Services;
 
-public class UpdateHandlerFactory : IUpdateHandlerFactory
+public class FsmHandlerFactory : IFsmHandlerFactory
 {
-    private readonly IEnumerable<IUpdateHandler> _updateHandlers;
+    private readonly IEnumerable<IFsmHandler> _updateHandlers;
 
-    public UpdateHandlerFactory(IEnumerable<IUpdateHandler> updateHandlers)
+    public FsmHandlerFactory(IEnumerable<IFsmHandler> updateHandlers)
     {
         _updateHandlers = updateHandlers;
     }
 
-    public IUpdateHandler GetUpdateHandler(Type? handlerType)
+    public IFsmHandler GetFsmHandler(Type? handlerType)
     {
         if (handlerType is null)
             return _updateHandlers.Single(h => h.GetType() == typeof(FallbackHandler));

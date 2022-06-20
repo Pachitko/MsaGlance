@@ -13,29 +13,29 @@ using Telegram.Bot;
 
 namespace TelegramBot.Api.Services;
 
-public class HandlerExecutor : IHandlerExecutor
+public class FsmHandlerExecutor : IFsmHandlerExecutor
 {
     private readonly TelegramBotWrapper _botWrapper;
-    private readonly ILogger<HandlerExecutor> _logger;
+    private readonly ILogger<FsmHandlerExecutor> _logger;
     private readonly ITelegramUserStateManager _telegramUserStateManager;
-    private readonly UpdateSpecificationResolver _updateSpecificationResolver;
-    private readonly IUpdateHandlerFactory _updateHandlerFactory;
-    private readonly UpdateHandlerOptions _updateHandlerOptions;
+    private readonly FsmSpecificationResolver _updateSpecificationResolver;
+    private readonly IFsmHandlerFactory _updateHandlerFactory;
+    private readonly FsmOptions _fsmOptions;
 
-    public HandlerExecutor(
+    public FsmHandlerExecutor(
         TelegramBotWrapper botWrapper,
-        ILogger<HandlerExecutor> logger,
+        ILogger<FsmHandlerExecutor> logger,
         ITelegramUserStateManager telegramUserStateManager,
-        UpdateSpecificationResolver updateSpecificationResolver,
-        IOptions<UpdateHandlerOptions> updateHandlerOptions,
-        IUpdateHandlerFactory updateHandlerFactory)
+        FsmSpecificationResolver updateSpecificationResolver,
+        IOptions<FsmOptions> fsmOptions,
+        IFsmHandlerFactory updateHandlerFactory)
     {
         _botWrapper = botWrapper;
         _logger = logger;
         _telegramUserStateManager = telegramUserStateManager;
         _updateSpecificationResolver = updateSpecificationResolver;
         _updateHandlerFactory = updateHandlerFactory;
-        _updateHandlerOptions = updateHandlerOptions.Value;
+        _fsmOptions = fsmOptions.Value;
     }
 
     public async Task HandleAsync(Update update)
@@ -58,9 +58,9 @@ public class HandlerExecutor : IHandlerExecutor
             .GetSatisfiedSpecifications(update)
             .ForEach(async spec =>
             {
-                Type? handlerType = _updateHandlerOptions.Get(currentState, spec);
+                Type? handlerType = _fsmOptions.Get(currentState, spec);
 
-                IUpdateHandler handler = _updateHandlerFactory.GetUpdateHandler(handlerType);
+                IFsmHandler handler = _updateHandlerFactory.GetFsmHandler(handlerType);
                 TelegramBotClient botClient = await _botWrapper.GetClientAsync();
                 UpdateContext updateContext = new(update, botClient, (currentState, spec));
 

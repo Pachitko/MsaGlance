@@ -3,7 +3,7 @@ using System;
 
 namespace TelegramBot.Api.Services.Abstractions;
 
-public interface IUpdateHandlerFactory
+public interface IFsmHandlerFactory
 {
-    IUpdateHandler GetUpdateHandler(Type? handlerType);
+    IFsmHandler GetFsmHandler(Type? handlerType);
 }

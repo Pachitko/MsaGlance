@@ -16,7 +16,7 @@ using TelegramBot.Api.UpdateSpecifications.Abstractions;
 
 namespace TelegramBot.Api.Handlers;
 
-public class LoginHandler : IUpdateHandler
+public class LoginHandler : IFsmHandler
 {
     private const string LoginWithUsernameAndPassword = "LoginWithUsernameAndPassword";
 
@@ -29,7 +29,7 @@ public class LoginHandler : IUpdateHandler
         _userTokenRepository = userTokenRepository;
     }
 
-    public void AddTransitionsToOptions(UpdateHandlerOptions config)
+    public void AddTransitionsToFsmOptions(FsmOptions config)
     {
         config.From(GlobalStates.Any).With<LoginUpdateSpecification>().To<LoginHandler>();
         config.From(LoginWithUsernameAndPassword).With<NotCommandUpdateSpecification>().To<LoginHandler>();

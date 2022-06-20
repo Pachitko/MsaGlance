@@ -21,29 +21,29 @@ public static class ServiceCollectionExtensions
                 o.WebHookEndpoint = c.GetValue<string>("WEB_HOOK_ENDPOINT");
             });
 
-        services.AddByType<IUpdateHandler>(ServiceLifetime.Scoped);
-        services.AddByType<IUpdateSpecification>(ServiceLifetime.Singleton);
+        services.AddByType<IFsmHandler>(ServiceLifetime.Scoped);
+        services.AddByType<IFsmSpecification>(ServiceLifetime.Singleton);
 
         services.AddHttpClient();
 
-        services.AddScoped<IHandlerExecutor, HandlerExecutor>();
+        services.AddScoped<IFsmHandlerExecutor, FsmHandlerExecutor>();
         services.AddScoped<ITelegramUserStateManager, TelegramUserStateManager>();
-        services.AddScoped<IUpdateHandlerFactory, UpdateHandlerFactory>();
+        services.AddScoped<IFsmHandlerFactory, FsmHandlerFactory>();
 
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
         services.AddSingleton<TelegramBotWrapper>();
-        services.AddSingleton<UpdateSpecificationResolver>();
+        services.AddSingleton<FsmSpecificationResolver>();
 
         services.AddHostedService<TelegramBotInitializationHostedService>();
 
-        services.AddOptions<UpdateHandlerOptions>().Configure<IServiceProvider>((config, serviceProvider) =>
+        services.AddOptions<FsmOptions>().Configure<IServiceProvider>((config, serviceProvider) =>
         {
             serviceProvider.CreateScope()
-                .ServiceProvider.GetServices<IUpdateHandler>().ForEach(handler =>
+                .ServiceProvider.GetServices<IFsmHandler>().ForEach(handler =>
             {
-                handler.AddTransitionsToOptions(config);
+                handler.AddTransitionsToFsmOptions(config);
             });
         });
 
@@ -53,11 +53,11 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddByType<T>(this IServiceCollection services, ServiceLifetime serviceLifetime)
     {
         Type targetType = typeof(T);
-        var types = targetType
-            .Assembly.GetTypes()
-            .Where(t => targetType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
 
-        types.ForEach(implementation =>
+        AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(c => c.GetTypes())
+            .Where(t => targetType.IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .ForEach(implementation =>
             {
                 services.Add(new ServiceDescriptor(targetType, implementation, serviceLifetime));
             });

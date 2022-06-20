@@ -4,8 +4,8 @@ using TelegramBot.Api.Models;
 
 namespace TelegramBot.Api.Handlers.Abstractions;
 
-public interface IUpdateHandler
+public interface IFsmHandler
 {
-    void AddTransitionsToOptions(UpdateHandlerOptions config);
+    void AddTransitionsToFsmOptions(FsmOptions options);
     Task<string> HandleAsync(UpdateContext context);
 }

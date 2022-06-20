@@ -2,7 +2,7 @@ using Telegram.Bot.Types;
 
 namespace TelegramBot.Api.UpdateSpecifications.Abstractions;
 
-public abstract class TextUpdateSpecification : IUpdateSpecification
+public abstract class TextUpdateSpecification : IFsmSpecification
 {
     public virtual bool IsSatisfiedBy(Update update)
     {

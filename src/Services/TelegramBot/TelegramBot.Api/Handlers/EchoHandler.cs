@@ -10,9 +10,9 @@ using Telegram.Bot;
 
 namespace TelegramBot.Api.Handlers;
 
-public class EchoHandler : IUpdateHandler
+public class EchoHandler : IFsmHandler
 {
-    public void AddTransitionsToOptions(UpdateHandlerOptions config)
+    public void AddTransitionsToFsmOptions(FsmOptions config)
     {
         config.From(GlobalStates.Any).With<NotCommandUpdateSpecification>().To<EchoHandler>();
     }
