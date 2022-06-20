@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Disk.Api;
@@ -50,7 +51,9 @@ app.MapGet("/", () => $"Disk {DateTime.UtcNow}");
 app.MapGet("/files", (HttpContext httpContext) =>
 {
     string userDirectoryPath = GetUserDirectoryPathOrCreate(httpContext);
-    return Results.Ok(Directory.GetFiles(userDirectoryPath).Select(f => Path.GetFileName(f)));
+    IEnumerable<string> fileNames = Directory.GetFiles(userDirectoryPath).Select(f => Path.GetFileName(f));
+    fileNames = fileNames.OrderBy(x => x);
+    return Results.Ok(fileNames);
 }).RequireAuthorization("disk.api.read");
 
 app.MapGet("/files/{fileName}", (string fileName, HttpContext httpContext) =>

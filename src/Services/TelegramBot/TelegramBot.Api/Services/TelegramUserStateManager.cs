@@ -17,18 +17,18 @@ public class TelegramUserStateManager : ITelegramUserStateManager
         _userRepository = userRepository ?? throw new NullReferenceException(nameof(userRepository));
     }
 
-    public  async Task<string> GetStateAsync(User user, long chatId)
+    public async Task<string> GetStateAsync(User user, long chatId)
     {
         await CreateUserIfDoesNotExist(user, chatId);
         return await _userRepository.GetStateAsync(user.Id);
     }
 
-    public  async Task SetStateAsync(User user, long chatId, string nextState)
+    public async Task SetStateAsync(User user, long chatId, string nextState)
     {
         await CreateUserIfDoesNotExist(user, chatId);
         await _userRepository.SetStateAsync(user.Id, nextState);
     }
-    
+
     private async Task CreateUserIfDoesNotExist(User user, long chatId)
     {
         // user is required to save the state
