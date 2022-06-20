@@ -48,19 +48,25 @@ public class HandlerExecutor : IHandlerExecutor
 
         User user = update.Message!.From;
         long chatId = update.Message.Chat.Id;
+
         var currentState = await _telegramUserStateManager.GetStateAsync(update.Message.From, chatId);
 
+        // todo ?????????????????? 
+        // Only one specification must satisfy the update, so-called Endpoints in ASP.NET Core
+        // ??????
         _updateSpecificationResolver
             .GetSatisfiedSpecifications(update)
             .ForEach(async spec =>
             {
                 Type? handlerType = _updateHandlerOptions.Get(currentState, spec);
+
                 IUpdateHandler handler = _updateHandlerFactory.GetUpdateHandler(handlerType);
                 TelegramBotClient botClient = await _botWrapper.GetClientAsync();
-                UpdateContext updateContext = new(update, botClient, spec, currentState);
+                UpdateContext updateContext = new(update, botClient, (currentState, spec));
 
                 string nextState = await handler.HandleAsync(updateContext);
                 await _telegramUserStateManager.SetStateAsync(user, chatId, nextState);
+                currentState = nextState;
             });
     }
 }

@@ -4,7 +4,7 @@ using Telegram.Bot;
 
 namespace TelegramBot.Api.Models;
 
-public record UpdateContext(Update Update, TelegramBotClient BotClient, IUpdateSpecification UsedSpecification, string CurrentState)
+public record UpdateContext(Update Update, TelegramBotClient BotClient, (string CurrentState, IUpdateSpecification UsedSpecification) Key)
 {
     public long? SafeChatId => Update.Message?.Chat.Id
                 ?? Update.EditedMessage?.Chat.Id

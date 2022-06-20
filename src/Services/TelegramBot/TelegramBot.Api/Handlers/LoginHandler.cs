@@ -39,12 +39,12 @@ public class LoginHandler : IUpdateHandler
     {
         long? userId = context.Update.Message?.From?.Id;
 
-        switch (context.CurrentState)
+        switch (context.Key)
         {
-            case GlobalStates.Any:
+            case (GlobalStates.Any, LoginUpdateSpecification):
                 await context.BotClient.SendTextMessageAsync(userId!, "Enter <i>username:password</i>", ParseMode.Html);
                 return LoginWithUsernameAndPassword;
-            case LoginWithUsernameAndPassword:
+            case (LoginWithUsernameAndPassword, NotCommandUpdateSpecification):
                 string messageText = context.Update.Message!.Text!;
 
                 string[] msgTextParts = messageText.Split(':');

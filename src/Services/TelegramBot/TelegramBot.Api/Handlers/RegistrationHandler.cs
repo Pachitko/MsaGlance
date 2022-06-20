@@ -36,12 +36,12 @@ public class RegistrationHandler : IUpdateHandler
         string? messageText = context.Update.Message?.Text;
         long? userId = context.SafeUserId;
 
-        switch (context.CurrentState)
+        switch (context.Key)
         {
-            case GlobalStates.Any:
+            case (GlobalStates.Any, RegistrationUpdateSpecification):
                 await context.BotClient.SendTextMessageAsync(userId!, "Enter <i>username:email:password</i> to register", ParseMode.Html);
                 return RegisterWithUsernameAndPassword;
-            case RegisterWithUsernameAndPassword:
+            case (RegisterWithUsernameAndPassword, NotCommandUpdateSpecification):
                 if (messageText != null)
                 {
                     string[] msgTextParts = messageText.Split(':');
