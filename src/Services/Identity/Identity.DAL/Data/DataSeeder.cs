@@ -1,14 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Identity;
-using Identity.Api.Domain.Entities;
-using System.Threading.Tasks;
-using Identity.Api.Data;
-using System.Linq;
-using System;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Identity;
+using Identity.Domain.Entities;
 
-namespace Infrastructure.Data
+namespace Identity.DAL.Data
 {
     public static class DataSeeder
     {

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Identity.Api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Identity.Domain.Entities;
 
-namespace Identity.Api.Data
+namespace Identity.DAL.Data
 {
     public class AuthDbContext : IdentityDbContext<AppUser, AppRole, long>
     {

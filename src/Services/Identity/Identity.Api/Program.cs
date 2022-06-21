@@ -1,9 +1,8 @@
 using Identity.Api;
 using Serilog;
-using Identity.Api.Domain.Entities;
-using Identity.Api.Data;
+using Identity.Domain.Entities;
+using Identity.DAL.Data;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Identity.Api.Models;
@@ -34,7 +33,7 @@ builder.Host.UseSerilog();
 
 string dbConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var migrationsAssembly = Assembly.GetExecutingAssembly().GetName().Name;
+var migrationsAssembly = typeof(AuthDbContext).Assembly.GetName().Name;
 
 builder.Services
     .AddDbContext<AuthDbContext>(o => o.UseNpgsql(dbConnectionString, o => o.MigrationsAssembly(migrationsAssembly)))

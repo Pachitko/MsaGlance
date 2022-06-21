@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
-using Identity.Api.Domain.Entities;
-using FluentValidation;
 using FluentValidation.Validators;
+using Identity.Domain.Entities;
+using FluentValidation;
 
 namespace Identity.Api.Models;
 public record UserRegistrationDto(string Username, string Email, string Password, string PasswordConfirmation)

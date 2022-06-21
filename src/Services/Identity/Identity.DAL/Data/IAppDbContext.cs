@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Identity.Api.Data
+namespace Identity.DAL.Data
 {
     public interface IAppDbContext
     {

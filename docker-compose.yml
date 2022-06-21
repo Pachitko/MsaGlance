@@ -89,7 +89,7 @@ services:
     container_name: idsrv
     image: idsrv:dev
     build:
-      context: ${SERVICES}Identity/Identity.Api
+      context: ${SERVICES}Identity/
       target: debug
     ports:
       - "127.0.0.1:4430:443"

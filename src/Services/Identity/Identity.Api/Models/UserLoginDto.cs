@@ -1,12 +1,11 @@
-using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using FluentValidation;
-using Microsoft.AspNetCore.Http;
 
 namespace Identity.Api.Models;
 public record UserLoginDto(string Username, string Password)
 {
-    public static ValueTask<UserLoginDto?> BindAsync(HttpContext httpContext, ParameterInfo parameter)
+    public static ValueTask<UserLoginDto?> BindAsync(HttpContext httpContext)
     {
         return ValueTask.FromResult<UserLoginDto?>(
             new UserLoginDto(
