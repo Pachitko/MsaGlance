@@ -1,13 +1,10 @@
-using TelegramBot.Api.UpdateSpecifications.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
-using TelegramBot.Api.Handlers.Abstractions;
-using Microsoft.Extensions.Configuration;
 using TelegramBot.Api.Data.Repositories;
+using TelegramBot.Api.FSM.Abstractions;
+using TelegramBot.Api.FSM.Models;
 using TelegramBot.Api.Services;
 using TelegramBot.Api.Options;
-using System.Linq;
-using System;
-using TelegramBot.Api.Services.Abstractions;
+using TelegramBot.Api.FSM;
+using Telegram.Bot.Types;
 
 namespace TelegramBot.Api.Extensions;
 
@@ -21,31 +18,23 @@ public static class ServiceCollectionExtensions
                 o.WebHookEndpoint = c.GetValue<string>("WEB_HOOK_ENDPOINT");
             });
 
-        services.AddByType<IFsmHandler>(ServiceLifetime.Scoped);
-        services.AddByType<IFsmSpecification>(ServiceLifetime.Singleton);
+        var endpoints = BotEndpointFactory.GetHandlerEndpoints();
+        services.AddSingleton(endpoints);
+        foreach (var handlerType in BotEndpointFactory.Handlers)
+        {
+            services.AddScoped(handlerType);
+        }
 
-        services.AddHttpClient();
-
-        services.AddScoped<IFsmHandlerExecutor, FsmHandlerExecutor>();
-        services.AddScoped<ITelegramUserStateManager, TelegramUserStateManager>();
-        services.AddScoped<IFsmHandlerFactory, FsmHandlerFactory>();
+        services.AddScoped<BotStateManager>();
+        services.AddScoped<IFsmHandlerExecutor<BotFsmContext, Update>, BotHandlerExecutor>();
+        services.AddScoped<IContextAccessor<BotFsmContext, Update>, BotContextAccessor>();
 
         services.AddScoped<ITelegramUserRepository, TelegramUserRepository>();
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
         services.AddSingleton<TelegramBotWrapper>();
-        services.AddSingleton<FsmSpecificationResolver>();
 
         services.AddHostedService<TelegramBotInitializationHostedService>();
-
-        services.AddOptions<FsmOptions>().Configure<IServiceProvider>((config, serviceProvider) =>
-        {
-            serviceProvider.CreateScope()
-                .ServiceProvider.GetServices<IFsmHandler>().ForEach(handler =>
-            {
-                handler.AddTransitionsToFsmOptions(config);
-            });
-        });
 
         return services;
     }

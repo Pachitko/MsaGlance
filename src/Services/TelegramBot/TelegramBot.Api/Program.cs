@@ -1,19 +1,17 @@
-using TelegramBot.Api.Services.Abstractions;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Builder;
+using TelegramBot.Api.FSM.Abstractions;
 using TelegramBot.Api.Exceptions;
 using TelegramBot.Api.Extensions;
-using Microsoft.AspNetCore.Http;
+using TelegramBot.Api.FSM.Models;
 using Microsoft.AspNetCore.Mvc;
 using TelegramBot.Api.Services;
-using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Newtonsoft.Json;
 using Serilog.Events;
 using Serilog;
-using System;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var services = builder.Services;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -22,6 +20,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+services.AddHttpClient();
 builder.Services.AddTelegramBot();
 
 var app = builder.Build();
@@ -32,7 +31,7 @@ app.MapPost("/update", Update);
 
 await app.RunAsync();
 
-static async Task<IResult> Update([FromBody] object updateDto, IFsmHandlerExecutor commandExecutor, ILogger<Program> logger)
+static async Task<IResult> Update([FromBody] object updateDto, IFsmHandlerExecutor<BotFsmContext, Update> commandExecutor, ILogger<Program> logger)
 {
     try
     {
