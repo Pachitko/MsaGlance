@@ -1,43 +1,43 @@
 using TelegramBot.Api.Data.Repositories;
-using TelegramBot.Api.FSM.Abstractions;
 using TelegramBot.Api.Domain.Entities;
-using TelegramBot.Api.FSM.Attributes;
-using TelegramBot.Api.FSM.Models;
+using TelegramBot.Api.Attribute;
+using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types.Enums;
+using TelegramBot.Api.Filters;
 using TelegramBot.Api.Domain;
 using IdentityModel.Client;
-using Telegram.Bot.Types;
+using System.Net.Mime;
+using Newtonsoft.Json;
 using Telegram.Bot;
+using System.Text;
 
-namespace TelegramBot.Api.FSM.Handlers;
+namespace TelegramBot.Api.Controllers;
 
-public class AuthHandler : BaseFsmHandler<BotFsmContext, Update>
+[ApiController]
+[TypeFilter(typeof(BotStateActionFilterAttribute))]
+public class AuthController : BotControllerBase
 {
-    private const string WaitingForUsernameAndPassword = "WaitingForUsernameAndPassword";
-
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IUserTokenRepository _userTokenRepository;
-    public AuthHandler(IHttpClientFactory httpClientFactory,
-        IUserTokenRepository userTokenRepository,
-        IContextAccessor<BotFsmContext, Update> updateContextAccessor)
-        : base(updateContextAccessor)
+    public AuthController(
+        IHttpClientFactory httpClientFactory,
+        IUserTokenRepository userTokenRepository)
     {
         _httpClientFactory = httpClientFactory;
         _userTokenRepository = userTokenRepository;
     }
 
-    [SlashCommand(GlobalStates.Any, "login", "Login")]
+    [BotCommandGet(BotDefaults.AnyState, "login")]
     public async Task<string> Login()
     {
-        await Context.BotClient.SendTextMessageAsync(Context.UserId, "Enter <i>username:password</i>", ParseMode.Html);
-        return WaitingForUsernameAndPassword;
+        await BotContext.BotClient.SendTextMessageAsync(BotContext.UserId, "Enter <i>username:password</i>", ParseMode.Html);
+        return nameof(AuthController.LoginWithUsernameAndPassword);
     }
 
-    [NoSlashCommand(WaitingForUsernameAndPassword)]
-    public async Task<string> ContinueLogin()
+    [BotTextGet(nameof(AuthController.LoginWithUsernameAndPassword), "{messageText}")]
+    public async Task<string> LoginWithUsernameAndPassword(string messageText)
     {
-        string messageText = Context.Input.Message!.Text!;
-        long? userId = Context.Input.Message?.From?.Id;
+        long? userId = BotContext.Input?.Message?.From?.Id;
 
         string[] msgTextParts = messageText.Split(':');
         string username = msgTextParts[0].Trim();
@@ -80,13 +80,13 @@ public class AuthHandler : BaseFsmHandler<BotFsmContext, Update>
         {
             await AddOrUpdateTokenAsync(accessToken);
             await AddOrUpdateTokenAsync(refreshToken);
-            await Context.BotClient.SendTextMessageAsync(userId!, $"Login succeeded", ParseMode.MarkdownV2);
+            await BotContext.BotClient.SendTextMessageAsync(userId!, $"Login succeeded", ParseMode.MarkdownV2);
         }
         else
         {
-            await Context.BotClient.SendTextMessageAsync(userId!, $"Login error", ParseMode.MarkdownV2);
+            await BotContext.BotClient.SendTextMessageAsync(userId!, $"Login error", ParseMode.MarkdownV2);
         }
-        return GlobalStates.Any;
+        return BotDefaults.AnyState;
     }
 
     private async Task AddOrUpdateTokenAsync(UserToken token)
@@ -102,5 +102,36 @@ public class AuthHandler : BaseFsmHandler<BotFsmContext, Update>
                 await _userTokenRepository.UpdateAsync(token);
             }
         }
+    }
+
+    [BotCommandGet(BotDefaults.AnyState, "register")]
+    public async Task<string> Register()
+    {
+        await BotContext.BotClient.SendTextMessageAsync(BotContext.UserId, "Enter <i>username:email:password</i> to register", ParseMode.Html);
+        return nameof(AuthController.RegisterWithUsernameAndPassword);
+    }
+
+    [BotTextGet(nameof(AuthController.RegisterWithUsernameAndPassword), "{messageText}")]
+    public async Task<string> RegisterWithUsernameAndPassword(string messageText)
+    {
+        string[] msgTextParts = messageText.Split(':');
+        var registrationModel = new
+        {
+            username = msgTextParts[0].Trim(),
+            email = msgTextParts[1].Trim(),
+            password = msgTextParts[2].Trim(),
+            passwordConfirmation = msgTextParts[2].Trim()
+        };
+
+        // todo: validate registrationModel
+
+        StringContent content = new(JsonConvert.SerializeObject(registrationModel), Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        var authClient = _httpClientFactory.CreateClient();
+        authClient.BaseAddress = new System.Uri("https://idsrv");
+        await authClient.PostAsync("/auth/register", content);
+        await BotContext.BotClient.SendTextMessageAsync(BotContext.UserId, $"Registration succeeded", ParseMode.MarkdownV2);
+
+        return BotDefaults.AnyState;
     }
 }

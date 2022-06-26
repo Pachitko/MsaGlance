@@ -10,9 +10,9 @@ namespace TelegramBot.Api.FSM;
 public class BotStateManager : IFsmStateManager
 {
     private readonly ITelegramUserRepository _userRepository;
-    private readonly IContextAccessor<BotFsmContext, Update> _updateContextAccessor;
+    private readonly IBotContextAccessor _updateContextAccessor;
 
-    public BotStateManager(ITelegramUserRepository userRepository, IContextAccessor<BotFsmContext, Update> updateContextAccessor)
+    public BotStateManager(ITelegramUserRepository userRepository, IBotContextAccessor updateContextAccessor)
     {
         _userRepository = userRepository ?? throw new NullReferenceException(nameof(userRepository));
         _updateContextAccessor = updateContextAccessor;
@@ -43,7 +43,7 @@ public class BotStateManager : IFsmStateManager
                 IdentityId = null,
                 ChatId = key.chatId,
                 Username = key.user.Username!,
-                State = GlobalStates.Any
+                State = BotDefaults.AnyState
             };
 
             await _userRepository.AddAsync(newTelegramUser);
@@ -52,7 +52,7 @@ public class BotStateManager : IFsmStateManager
 
     private (User user, long chatId) GetKey()
     {
-        User user = _updateContextAccessor.Context.Input.Message!.From!;
+        User user = _updateContextAccessor.Context.Input?.Message!.From!;
         long chatId = _updateContextAccessor.Context.SafeChatId!.Value;
         return (user!, chatId);
     }

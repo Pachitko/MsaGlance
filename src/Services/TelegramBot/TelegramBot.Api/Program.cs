@@ -1,11 +1,6 @@
-using TelegramBot.Api.FSM.Abstractions;
-using TelegramBot.Api.Exceptions;
+using TelegramBot.Api.Middlewares;
 using TelegramBot.Api.Extensions;
-using TelegramBot.Api.FSM.Models;
-using Microsoft.AspNetCore.Mvc;
 using TelegramBot.Api.Services;
-using Telegram.Bot.Types;
-using Newtonsoft.Json;
 using Serilog.Events;
 using Serilog;
 
@@ -16,36 +11,33 @@ var services = builder.Services;
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .MinimumLevel.Override(typeof(TelegramBotWrapper).Namespace, LogEventLevel.Debug)
+    .MinimumLevel.Override(typeof(BotContextMiddleware).Namespace, LogEventLevel.Debug)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 services.AddHttpClient();
-builder.Services.AddTelegramBot();
+services.AddTelegramBot();
 
 var app = builder.Build();
 
+app.UseExceptionHandler(CustomExceptionHandler.HandleException);
+
+app.UseMiddleware<BotContextMiddleware>();
+app.UseMiddleware<BotRouteRewriteMiddleware>();
+app.UseRouting(); // replace default UseRouting()
+
 app.MapGet("/", () => $"TelegramBot {DateTime.UtcNow}");
 
-app.MapPost("/update", Update);
+app.UseEndpoints(builder => builder.MapControllers());
+
+app.Run(async (ctx) =>
+{
+    ctx.RequestServices.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("NoEndpoint")
+        .LogWarning("Bot endpoint not found for path: \"{Path}\"", ctx.Request.Path);
+
+    await Results.Ok().ExecuteAsync(ctx);
+});
 
 await app.RunAsync();
-
-static async Task<IResult> Update([FromBody] object updateDto, IFsmHandlerExecutor<BotFsmContext, Update> commandExecutor, ILogger<Program> logger)
-{
-    try
-    {
-        Update update = JsonConvert.DeserializeObject<Update>(updateDto.ToString());
-        await commandExecutor.HandleAsync(update);
-    }
-    catch (BotCommandDoesNotExistException e)
-    {
-        logger.LogError(e, "Bot command does not exist");
-    }
-    catch (Exception e)
-    {
-        logger.LogError(e, "Error has occured: ");
-    }
-
-    return Results.Ok();
-}
