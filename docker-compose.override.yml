@@ -1,22 +1,39 @@
 version: '3.9'
 
-# services:
-# pgadmin:
-#   container_name: pgadmin
-#   image: dpage/pgadmin4:6.9
-#   environment:
-#     PGADMIN_DEFAULT_EMAIL: "mail@mail.ru"
-#     PGADMIN_DEFAULT_PASSWORD: "12qwasZX"
-#     PGADMIN_CONFIG_SERVER_MODE: "False"
-#   volumes:
-#     - pgadmin:/var/lib/pgadmin
-#   ports:
-#     - "5050:80"
-#   restart: unless-stopped
-#   deploy:
-#     resources:
-#       limits:
-#         cpus: '0.5'
-#         memory: 1G
-#   networks:
-#     - postgres
+services:
+  psql_db:
+    ports:
+      - "127.0.0.1:2345:5432"
+  disk:
+    ports:
+      - "127.0.0.1:4431:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+  tele_bot:
+    ports:
+      - "127.0.0.1:8003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://*:80
+      - BOT_TOKEN=${BOT_TOKEN}
+      - WEB_HOOK_ENDPOINT=${WEB_HOOK_ENDPOINT}
+  webapi:
+    ports:
+      - "127.0.0.1:4432:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://*:443
+      - ASPNETCORE_HTTPS_PORT=443
+  idsrv:
+    ports:
+      - "127.0.0.1:4430:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_HTTPS_PORT=443
+  # tempo_disk:
+  gw:
+    ports:
+      - 80:80

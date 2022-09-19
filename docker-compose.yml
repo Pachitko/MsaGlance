@@ -10,97 +10,85 @@ volumes:
     external: false
 
 networks:
-  main_net:
+  main:
     driver: bridge
 
 services:
   psql_db:
-    image: postgres:14.3
+    image: postgres:14.5
     container_name: psql_db
-    ports:
-      - "2345:5432"
     volumes:
       - psql_db:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: "idsrv"
-      POSTGRES_USER: "puser"
-      POSTGRES_PASSWORD: "12qwasZX"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U puser -d idsrv" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d idsrv" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     networks:
-      - main_net
-  tele_bot:
-    container_name: tele_bot
-    image: tele_bot:dev
-    ports:
-      - "127.0.0.1:8003:80"
-    build:
-      context: ${SERVICES}TelegramBot/TelegramBot.Api
-      target: debug
-    networks:
-      - main_net
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://*:80
-      - BOT_TOKEN=${BOT_TOKEN}
-      - WEB_HOOK_ENDPOINT=${WEB_HOOK_ENDPOINT}
-  webapi:
-    container_name: webapi
-    image: webapi:dev
-    build:
-      context: ${SERVICES}Web/Web.Api
-      target: debug
-    ports:
-      - "127.0.0.1:4432:443"
-    networks:
-      - main_net
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://*:443
-      - ASPNETCORE_HTTPS_PORT=443
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/webapi.crt
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
-    volumes:
-      - ./certs/webapi:/https/:ro
+      - main
   disk:
+    image: pachitko/disk:dev
     container_name: disk
-    image: disk:dev
     build:
       context: ${SERVICES}Disk/Disk.Api
-      target: debug
-    ports:
-      - "127.0.0.1:4431:443"
     networks:
-      - main_net
+      - main
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443
-      - ASPNETCORE_HTTPS_PORT=443
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/disk.crt
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/disk.key
     volumes:
       - ./certs/disk/:/https/:ro
       - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
-  idsrv:
-    container_name: idsrv
-    image: idsrv:dev
+  tele_bot:
+    image: pachitko/tele_bot:dev
+    container_name: tele_bot
     build:
-      context: ${SERVICES}Identity/
-      target: debug
-    ports:
-      - "127.0.0.1:4430:443"
+      context: ${SERVICES}TelegramBot/TelegramBot.Api
     networks:
-      - main_net
+      - main
+  webapi:
+    image: pachitko/webapi:dev
+    container_name: webapi
+    build:
+      context: ${SERVICES}Web/Web.Api
+    networks:
+      - main
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443
-      - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/webapi.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
+    volumes:
+      - ./certs/webapi:/https/:ro
+  idsrv:
+    image: pachitko/idsrv:dev
+    container_name: idsrv
+    build:
+      context: ${SERVICES}Identity
+    networks:
+      - main
+    environment:
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/idsrv.crt
       - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/idsrv.key
     volumes:
       - ./certs/idsrv/:/https/:ro
       - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
+  tempo_disk:
+    image: pachitko/tempodisk:dev
+    container_name: tempodisk
+    build:
+      context: ${SERVICES}TempoDisk/TempoDisk.Api
+    networks:
+      - main
+  gw:
+    image: pachitko/gw:dev
+    container_name: gw
+    build: 
+      context: ${SERVICES}Gateway
+    networks:
+      - main
+    depends_on:
+      - tempo_disk

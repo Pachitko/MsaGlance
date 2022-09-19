@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 volumes:
   db:
@@ -34,3 +34,6 @@ services:
       - db
     networks:
       - main_net
+  gw:
+    ports:
+      - 443:443
