@@ -31,7 +31,7 @@ func newMux() *http.ServeMux {
 }
 
 func (s *Server) Run() error {
-	err := http.ListenAndServe(":4545", s.mux)
+	err := http.ListenAndServe(":80", s.mux)
 	return err
 }
 
