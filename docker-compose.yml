@@ -1,94 +1,73 @@
 version: '3.9'
 
-volumes:
-  disk_data_protection_keys:
-    name: disk_data_protection_keys
-  idsrv_data_protection_keys:
-    name: idsrv_data_protection_keys
-  psql_db:
-    name: psql_db
-    external: false
-
 networks:
   main:
     driver: bridge
 
 services:
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    networks:
+      - main
   psql_db:
     image: postgres:14.5
     container_name: psql_db
-    volumes:
-      - psql_db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: "idsrv"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d idsrv" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
     networks:
       - main
   disk:
     image: pachitko/disk:dev
     container_name: disk
     build:
-      context: ${SERVICES}Disk/Disk.Api
+      context: ./src
+      dockerfile: Services/Disk/Disk.Api/Dockerfile
     networks:
       - main
-    environment:
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/disk.crt
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/disk.key
-    volumes:
-      - ./certs/disk/:/https/:ro
-      - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
   tele_bot:
     image: pachitko/tele_bot:dev
     container_name: tele_bot
     build:
-      context: ${SERVICES}TelegramBot/TelegramBot.Api
+      context: ./src
+      dockerfile: Services/TelegramBot/TelegramBot.Api/Dockerfile
     networks:
       - main
   webapi:
     image: pachitko/webapi:dev
     container_name: webapi
     build:
-      context: ${SERVICES}Web/Web.Api
+      context: ./src
+      dockerfile: Services/Web/Web.Api/Dockerfile
     networks:
       - main
-    environment:
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/webapi.crt
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
-    volumes:
-      - ./certs/webapi:/https/:ro
   idsrv:
     image: pachitko/idsrv:dev
     container_name: idsrv
     build:
-      context: ${SERVICES}Identity
+      context: ./src
+      dockerfile: Services/Identity/Dockerfile
     networks:
       - main
-    environment:
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/idsrv.crt
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/idsrv.key
-    volumes:
-      - ./certs/idsrv/:/https/:ro
-      - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
   tempo_disk:
-    image: pachitko/tempodisk:dev
-    container_name: tempodisk
+    image: pachitko/tempo_disk:dev
+    container_name: tempo_disk
     build:
-      context: ${SERVICES}TempoDisk/TempoDisk.Api
+      context: ./src
+      dockerfile: Services/TempoDisk/TempoDisk.Api/Dockerfile
     networks:
       - main
   gw:
     image: pachitko/gw:dev
     container_name: gw
     build: 
-      context: ${SERVICES}Gateway
+      context: ./src
+      dockerfile: Gateway/Dockerfile
     networks:
       - main
     depends_on:
       - tempo_disk
+  # schedule_parser:
+  #   image: pachitko/schedule_parser:dev
+  #   container_name: schedule_parser
+  #   build:
+  #     context: ./src
+  #     dockerfile: Services/ScheduleParser/ScheduleParser.Api/Dockerfile

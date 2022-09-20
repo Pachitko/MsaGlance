@@ -1,16 +1,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /app
 
-COPY *.csproj ./
+COPY Services/Web/Web.Api/Web.Api.csproj .
 RUN dotnet restore
 
-COPY . .
-RUN dotnet publish -c Release -o /app/bin --no-restore
+COPY Services/Web/Web.Api .
+RUN dotnet publish -c Release -o /app/bin
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 
-COPY ./certs/idsrv.crt /usr/local/share/ca-certificates/idsrv.crt
-COPY ./certs/disk.crt /usr/local/share/ca-certificates/disk.crt
+COPY Services/Web/Web.Api/certs/idsrv.crt /usr/local/share/ca-certificates/idsrv.crt
+COPY Services/Web/Web.Api/certs/disk.crt /usr/local/share/ca-certificates/disk.crt
 RUN update-ca-certificates
 
 WORKDIR /app

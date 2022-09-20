@@ -1,16 +1,53 @@
 version: '3.9'
 
+volumes:
+  disk_data_protection_keys:
+    name: disk_data_protection_keys
+  idsrv_data_protection_keys:
+    name: idsrv_data_protection_keys
+  psql_db:
+    name: psql_db
+    external: false
+  pg_admin_data:
+    name: pg_admin_data
+    external: false
+
 services:
+  pgadmin:
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pachitko@mail.ru
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+    volumes:
+      - pg_admin_data:/var/lib/pgadmin
+    ports:
+      - 1234:80
   psql_db:
     ports:
       - "127.0.0.1:2345:5432"
+    volumes:
+      - psql_db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "idsrv"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d idsrv" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   disk:
     ports:
       - "127.0.0.1:4431:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_URLS=https://*:443
       - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/disk.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/disk.key
+    volumes:
+      - ./certs/disk/:/https/:ro
+      - disk_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
   tele_bot:
     ports:
       - "127.0.0.1:8003:80"
@@ -26,14 +63,31 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://*:443
       - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/webapi.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/webapi.key
+    volumes:
+      - ./certs/webapi:/https/:ro
   idsrv:
     ports:
       - "127.0.0.1:4430:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443
+      - ASPNETCORE_URLS=https://*:443
       - ASPNETCORE_HTTPS_PORT=443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/idsrv.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/idsrv.key
+    volumes:
+      - ./certs/idsrv/:/https/:ro
+      - idsrv_data_protection_keys:/root/.aspnet/DataProtection-Keys:rw
+    depends_on:
+      - psql_db
   # tempo_disk:
   gw:
     ports:
       - 80:80
+  # schedule_parser:
+  #   ports:
+  #     - 9999:80
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://*:80

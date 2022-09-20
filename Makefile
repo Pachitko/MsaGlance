@@ -16,7 +16,7 @@ prune:
 publish_docker:
 
 build:
-	docker compose -f docker-compose.yml ${ENV_DEV} build
+	docker compose -f docker-compose.yml -f docker-compose.override.yml ${ENV_DEV} build
 build-prod:
 # docker compose -f docker-compose.yml -f docker-compose.prod build
 	docker compose -f docker-compose.yml -f docker-compose.prod up --build

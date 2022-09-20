@@ -3,7 +3,7 @@ WORKDIR /app
 
 RUN apt-get -y update
 
-COPY ./ ./
+COPY Services/TempoDisk/TempoDisk.Api .
 
 RUN go mod download && go mod verify
 

@@ -6,13 +6,13 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
 WORKDIR /app
 
-COPY Identity.Domain/Identity.Domain.csproj Identity.Domain/
-COPY Identity.DAL/Identity.DAL.csproj Identity.DAL/
-COPY Identity.Api/Identity.Api.csproj Identity.Api/
+COPY Services/Identity/Identity.Domain/Identity.Domain.csproj Identity.Domain/
+COPY Services/Identity/Identity.DAL/Identity.DAL.csproj Identity.DAL/
+COPY Services/Identity/Identity.Api/Identity.Api.csproj Identity.Api/
 
 RUN dotnet restore Identity.Api/Identity.Api.csproj
 
-COPY . .
+COPY Services/Identity .
 RUN dotnet publish Identity.Api/Identity.Api.csproj -c Release -o /app/bin
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0

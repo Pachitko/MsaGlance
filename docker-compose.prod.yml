@@ -1,39 +1,39 @@
-version: "3.9"
+# version: "3.9"
 
-volumes:
-  db:
-    name: "db"
-    external: false
+# volumes:
+#   db:
+#     name: "db"
+#     external: false
 
-networks:
-  main_net:
-    driver: bridge
+# networks:
+#   main_net:
+#     driver: bridge
 
-services:
-  disk:
-    container_name: disk
-    image: pachitko/disk:1.0
-    build:
-      context: ${SERVICES}Disk/Disk.Api
-      target: prod
-    ports:
-      - "5001:80"
-    depends_on:
-      - idsrv
-    networks:
-      - main_net
-  idsrv:
-    container_name: idsrv
-    image: pachitko/idsrv:1.0
-    build:
-      context: ${SERVICES}Identity/Identity.Api
-      target: prod
-    ports:
-      - "5000:80"
-    depends_on:
-      - db
-    networks:
-      - main_net
-  gw:
-    ports:
-      - 443:443
+# services:
+#   disk:
+#     container_name: disk
+#     image: pachitko/disk:1.0
+#     build:
+#       context: ${SERVICES}Disk/Disk.Api
+#       target: prod
+#     ports:
+#       - "5001:80"
+#     depends_on:
+#       - idsrv
+#     networks:
+#       - main_net
+#   idsrv:
+#     container_name: idsrv
+#     image: pachitko/idsrv:1.0
+#     build:
+#       context: ${SERVICES}Identity/Identity.Api
+#       target: prod
+#     ports:
+#       - "5000:80"
+#     depends_on:
+#       - db
+#     networks:
+#       - main_net
+#   gw:
+#     ports:
+#       - 443:443
