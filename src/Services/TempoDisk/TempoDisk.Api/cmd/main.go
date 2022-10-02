@@ -1,58 +1,51 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"tempodisk/internal/app/server"
+	"tempodisk/internal/services/sha256FileNameGenerator"
 	"time"
 )
 
-func handlerPanic() {
-	if r := recover(); r != nil {
-		fmt.Println(r)
-		fmt.Println("Panic has been recovered")
-	} else {
-		fmt.Println("No panic")
-	}
-}
-
 func main() {
-	defer handlerPanic()
+	log.Println("Configuring server...")
 
-	log.Println("Configurating server...")
+	fileNameGenerator := sha256FileNameGenerator.New()
 
-	httpHandlerConfiguration := server.HttpHandlerConfiguration{}
-
-	httpHandler := server.NewHttpHandler(httpHandlerConfiguration)
-
-	server := &http.Server{Addr: ":8080", Handler: httpHandler}
+	serverConfig := server.Config{
+		Addr:              ":8080",
+		ShutdownTime:      2 * time.Second,
+		FileSaverCount:    4,
+		FileChanSize:      4,
+		FileNameGenerator: fileNameGenerator,
+		FileDir:           "./files",
+	}
+	serverWrapper := server.NewWrapper(serverConfig)
 
 	log.Printf("Server has been configured!\n")
 
 	go func() {
-		err := server.ListenAndServe()
+		err := serverWrapper.Run()
 		if err != http.ErrServerClosed {
-			log.Printf("Server error: %v\n", err)
+			log.Printf("Server error '%v'\n", err)
+		} else {
+			log.Printf("Server stopped successfully!\n")
 		}
-		log.Printf("Server stopped\n")
 	}()
 
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-	sig := <-sigCh
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-sigChan
 
 	log.Printf("Signal '%s' recieved\n", sig)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-	err := server.Shutdown(ctx)
+	err := serverWrapper.Shutdown()
 	if err != nil {
-		log.Printf("Shutdown error: %v", err)
+		log.Printf("Shutdown error '%v'", err)
 	}
 
 	log.Printf("Shutdown completed\n")
