@@ -65,9 +65,3 @@ services:
       - main
     depends_on:
       - tempo_disk
-  # schedule_parser:
-  #   image: pachitko/schedule_parser:dev
-  #   container_name: schedule_parser
-  #   build:
-  #     context: ./src
-  #     dockerfile: Services/ScheduleParser/ScheduleParser.Api/Dockerfile
