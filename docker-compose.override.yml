@@ -27,9 +27,9 @@ services:
     volumes:
       - psql_db:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: "idsrv"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d idsrv" ]
       interval: 10s
@@ -82,12 +82,6 @@ services:
     depends_on:
       - psql_db
   # tempo_disk:
-  gw:
+  tempo_disk:
     ports:
-      - 80:80
-  # schedule_parser:
-  #   ports:
-  #     - 9999:80
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_URLS=http://*:80
+      - 8080:80
